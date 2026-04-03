@@ -1,0 +1,155 @@
+// MARK: - Search View
+// Пошук записів із фільтрами.
+import SwiftUI
+
+struct SearchView: View {
+    @StateObject private var viewModel = SearchViewModel()
+    @State private var entryToEdit: DiaryEntry?
+
+    private let filters: [SearchFilter] = [
+        .all, .today, .thisWeek,
+        .mood(.excellent), .mood(.good), .mood(.neutral)
+    ]
+
+    var body: some View {
+        ZStack {
+            Color.diaryBackground.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Search bar
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(Color.diarySecondary)
+                    TextField("Пошук у записах...", text: $viewModel.query)
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color.diaryPrimaryText)
+                        .tint(Color.diaryPurple)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .background(Color.diaryCard)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+
+                // Filter chips
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(filters, id: \.label) { filter in
+                            FilterChip(
+                                label: filter.label,
+                                isSelected: viewModel.selectedFilter == filter,
+                                action: { viewModel.selectedFilter = filter }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                }
+
+                // Tag filters from entries
+                if !viewModel.results.isEmpty {
+                    let allTags = Array(Set(viewModel.results.flatMap { $0.tags })).sorted().prefix(6)
+                    if !allTags.isEmpty {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                Text("Теги:")
+                                    .font(.system(size: 13))
+                                    .foregroundStyle(Color.diarySecondary)
+                                ForEach(allTags, id: \.self) { tag in
+                                    TagChip(text: "#\(tag)")
+                                }
+                            }
+                            .padding(.horizontal, 20)
+                        }
+                        .padding(.top, 8)
+                    }
+                }
+
+                // Results
+                if viewModel.query.isEmpty && viewModel.selectedFilter == .all {
+                    emptyPrompt
+                } else {
+                    resultsList
+                }
+            }
+        }
+        .sheet(item: $entryToEdit) { entry in
+            EntryEditorView(entry: entry)
+        }
+        .onAppear { viewModel.load() }
+    }
+
+    private var emptyPrompt: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 40))
+                .foregroundStyle(Color.diarySecondary)
+            Text("Введи запит для пошуку")
+                .font(.system(size: 16))
+                .foregroundStyle(Color.diarySecondary)
+            Spacer()
+        }
+    }
+
+    private var resultsList: some View {
+        Group {
+            if viewModel.results.isEmpty {
+                VStack(spacing: 12) {
+                    Spacer()
+                    Text("Нічого не знайдено")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color.diarySecondary)
+                    Spacer()
+                }
+            } else {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Результати (\(viewModel.results.count))")
+                            .font(.system(size: 13))
+                            .foregroundStyle(Color.diarySecondary)
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 12)
+
+                        ForEach(viewModel.results) { entry in
+                            DiaryEntryCard(
+                                entry: entry,
+                                onEdit: { entryToEdit = entry },
+                                onDelete: {}
+                            )
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 12)
+                            .onTapGesture { entryToEdit = entry }
+                        }
+                        Spacer().frame(height: 90)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Filter Chip
+struct FilterChip: View {
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                .foregroundStyle(isSelected ? .white : Color.diarySecondary)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isSelected ? Color.diaryPurple : Color.diaryCard)
+                .clipShape(Capsule())
+        }
+    }
+}
+
+#Preview {
+    SearchView()
+        .preferredColorScheme(.dark)
+}
