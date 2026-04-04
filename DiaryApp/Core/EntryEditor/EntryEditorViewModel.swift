@@ -13,9 +13,18 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
     @Published var wordCount = 0
     @Published var error: Error?
     @Published var alert: AppAlert?
+    @Published private(set) var allTags: [String] = []
 
     @Injected(\.diaryStore)  private var diaryStore: DiaryStoreProtocol
     @Injected(\.streakStore) private var streakStore: StreakStoreProtocol
+
+    /// Теги для підказок: фільтр за введеним текстом, виключаємо вже додані
+    var tagSuggestions: [String] {
+        let query = tagInput.trimmingCharacters(in: .whitespaces).lowercased()
+        let available = allTags.filter { !tags.contains($0) }
+        guard !query.isEmpty else { return available }
+        return available.filter { $0.lowercased().hasPrefix(query) }
+    }
 
     // Фіксований ID протягом усього часу редагування
     private var entryID: String
@@ -37,6 +46,7 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
             self.tags = entry.tags
         }
         setupAutoSave()
+        loadAllTags()
     }
 
     func save() {
@@ -79,6 +89,16 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
     }
 
     // MARK: - Private
+
+    private func loadAllTags() {
+        Task {
+            let entries = (try? await diaryStore.fetchEntries()) ?? []
+            // Рахуємо частоту кожного тегу, щоб показати найпопулярніші першими
+            var counts: [String: Int] = [:]
+            entries.flatMap { $0.tags }.forEach { counts[$0, default: 0] += 1 }
+            allTags = counts.sorted { $0.value > $1.value }.map { $0.key }
+        }
+    }
 
     private func buildEntry() -> DiaryEntry {
         DiaryEntry(

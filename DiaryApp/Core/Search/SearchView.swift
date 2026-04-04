@@ -17,6 +17,25 @@ struct SearchView: View {
             Color.diaryBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Title
+                HStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(theme.accent.opacity(0.2))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 16))
+                            .foregroundStyle(theme.accent)
+                    }
+                    Text("Пошук")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(Color.diaryPrimaryText)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+
                 // Search bar
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")

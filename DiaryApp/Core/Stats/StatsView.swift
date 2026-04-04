@@ -13,9 +13,25 @@ struct StatsView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    // Title
+                    HStack(spacing: 10) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(theme.accent.opacity(0.2))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "chart.bar.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(theme.accent)
+                        }
+                        Text("Статистика")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(Color.diaryPrimaryText)
+                        Spacer()
+                    }
+                    .padding(.top, 16)
+
                     // Month selector
                     monthSelector
-                        .padding(.top, 16)
 
                     // Summary cards
                     HStack(spacing: 12) {
@@ -102,12 +118,14 @@ struct StatsView: View {
                         Chart(viewModel.moodChartData, id: \.day) { item in
                             BarMark(
                                 x: .value("День", item.day),
-                                y: .value("Настрій", item.mood)
+                                y: .value("Настрій", item.mood),
+                                width: .fixed(6)
                             )
                             .foregroundStyle(moodColor(for: item.mood))
-                            .cornerRadius(4)
+                            .cornerRadius(3)
                         }
                         .chartYScale(domain: 1...5)
+                        .chartXScale(domain: 1...31)
                         .chartXAxis {
                             AxisMarks(values: [5, 10, 15, 20, 25, 30]) { _ in
                                 AxisValueLabel()

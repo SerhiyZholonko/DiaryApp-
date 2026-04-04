@@ -193,6 +193,7 @@ struct EntryEditorView: View {
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.diarySecondary)
 
+            // Додані теги + поле вводу
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(viewModel.tags, id: \.self) { tag in
@@ -232,7 +233,36 @@ struct EntryEditorView: View {
                     .clipShape(Capsule())
                 }
             }
+
+            // Підказки з попередніх записів
+            let suggestions = viewModel.tagSuggestions
+            if !suggestions.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(suggestions, id: \.self) { tag in
+                            Button(action: {
+                                viewModel.tagInput = tag
+                                viewModel.addTag()
+                            }) {
+                                Text("#\(tag)")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(Color.diarySecondary)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color.diaryCard)
+                                    .clipShape(Capsule())
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(Color.diaryDivider, lineWidth: 1)
+                                    )
+                            }
+                        }
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: viewModel.tagSuggestions.count)
     }
 
     // MARK: - Text Editor

@@ -14,6 +14,22 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+                    // Title
+                    HStack(spacing: 10) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(theme.accent.opacity(0.2))
+                                .frame(width: 36, height: 36)
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 16))
+                                .foregroundStyle(theme.accent)
+                        }
+                        Text("Налаштування")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(Color.diaryPrimaryText)
+                        Spacer()
+                    }
+
                     profileCard
 
                     // Security section
