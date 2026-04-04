@@ -74,18 +74,6 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
         tags.removeAll { $0 == tag }
     }
 
-    func applyFormat(_ format: MarkdownFormat) {
-        let syntax: String
-        switch format {
-        case .bold:    syntax = "**текст**"
-        case .italic:  syntax = "*текст*"
-        case .heading: syntax = "\n## "
-        case .list:    syntax = "\n- "
-        case .quote:   syntax = "\n> "
-        }
-        text += syntax
-    }
-
     func updateWordCount() {
         wordCount = text.split { $0.isWhitespace || $0.isNewline }.count
     }
@@ -132,6 +120,24 @@ enum MarkdownFormat: CaseIterable {
         case .heading: return "textformat.size.larger"
         case .list:    return "list.bullet"
         case .quote:   return "text.quote"
+        }
+    }
+
+    var prefix: String {
+        switch self {
+        case .bold:    return "**"
+        case .italic:  return "*"
+        case .heading: return "\n## "
+        case .list:    return "\n- "
+        case .quote:   return "\n> "
+        }
+    }
+
+    var suffix: String {
+        switch self {
+        case .bold:   return "**"
+        case .italic: return "*"
+        default:      return ""
         }
     }
 }

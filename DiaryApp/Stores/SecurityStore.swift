@@ -32,13 +32,25 @@ final class SecurityStore {
 
     func authenticate() async throws -> Bool {
         let ctx = LAContext()
-        var error: NSError?
-        guard ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            return true // якщо біометрика недоступна — пропускаємо
+        var nsError: NSError?
+        let reason = "Підтвердіть вашу особистість для доступу до щоденника"
+
+        if ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &nsError) {
+            // Спробуємо Face ID / Touch ID
+            do {
+                return try await ctx.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
+            } catch let laError as LAError {
+                // Якщо користувач скасував — кидаємо далі, щоб кнопка залишалась
+                if laError.code == .userCancel { throw laError }
+                // При lockout або іншій помилці — падаємо на пасскод нижче
+            }
         }
-        return try await ctx.evaluatePolicy(
-            .deviceOwnerAuthentication,
-            localizedReason: "Підтвердіть вашу особистість для доступу до щоденника"
-        )
+
+        // Fallback: пасскод (якщо Face ID недоступний або заблокований)
+        let fallbackCtx = LAContext()
+        guard fallbackCtx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &nsError) else {
+            return true // немає жодного методу авторизації — пропускаємо
+        }
+        return try await fallbackCtx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
     }
 }

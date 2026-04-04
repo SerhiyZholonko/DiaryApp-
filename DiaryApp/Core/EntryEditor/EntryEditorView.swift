@@ -4,8 +4,10 @@ import SwiftUI
 
 struct EntryEditorView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel: EntryEditorViewModel
-    @FocusState private var isTextFocused: Bool
+    @State private var isTextFocused = false
+    @StateObject private var editorController = MarkdownEditorController()
     @State private var showPreview: Bool
 
     init(entry: DiaryEntry?) {
@@ -18,21 +20,18 @@ struct EntryEditorView: View {
             Color.diaryBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Navigation bar
                 navBar
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 20) {
-                        // Date
                         dateHeader
 
-                        // Mood picker
                         if !showPreview { moodSection }
-
-                        // Tags
                         if !showPreview { tagsSection }
 
-                        // Text editor or preview
+                        // Edit / Preview toggle
+                        editPreviewToggle
+
                         if showPreview {
                             markdownPreview
                         } else {
@@ -45,7 +44,6 @@ struct EntryEditorView: View {
                     .padding(.top, 16)
                 }
 
-                // Markdown toolbar (when keyboard is visible, edit mode only)
                 if isTextFocused && !showPreview {
                     markdownToolbar
                 }
@@ -72,30 +70,17 @@ struct EntryEditorView: View {
 
             Spacer()
 
-            HStack(spacing: 12) {
-                Button(action: {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        showPreview.toggle()
-                        if showPreview { isTextFocused = false }
-                    }
-                }) {
-                    Image(systemName: showPreview ? "pencil" : "eye")
-                        .font(.system(size: 16))
-                        .foregroundStyle(showPreview ? Color.diaryPurple : Color.diarySecondary)
+            Button(action: viewModel.save) {
+                if viewModel.isSaving {
+                    ProgressView().tint(theme.accent)
+                } else {
+                    Text("Зберегти")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(theme.accent)
+                        .fixedSize()
                 }
-
-                Button(action: viewModel.save) {
-                    if viewModel.isSaving {
-                        ProgressView().tint(Color.diaryPurple)
-                    } else {
-                        Text("Зберегти")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.diaryPurple)
-                            .fixedSize()
-                    }
-                }
-                .disabled(viewModel.isSaving)
             }
+            .disabled(viewModel.isSaving)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 14)
@@ -107,7 +92,7 @@ struct EntryEditorView: View {
         HStack(spacing: 8) {
             Image(systemName: "calendar")
                 .font(.system(size: 14))
-                .foregroundStyle(Color.diaryPurple)
+                .foregroundStyle(theme.accent)
             Text(viewModel.date.formatted(
                 .dateTime
                     .weekday(.wide)
@@ -125,6 +110,44 @@ struct EntryEditorView: View {
         .padding(.vertical, 10)
         .background(Color.diaryCard)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Edit / Preview Toggle
+    private var editPreviewToggle: some View {
+        HStack(spacing: 0) {
+            toggleSegment(title: "Редагувати", icon: "pencil", isActive: !showPreview) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showPreview = false
+                }
+            }
+            toggleSegment(title: "Перегляд", icon: "eye", isActive: showPreview) {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    showPreview = true
+                    isTextFocused = false
+                    editorController.resignFocus()
+                }
+            }
+        }
+        .background(Color.diaryCard)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func toggleSegment(title: String, icon: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 13, weight: .medium))
+                Text(title)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(isActive ? theme.accent : Color.diarySecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+            .background(isActive ? theme.accent.opacity(0.12) : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding(3)
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Mood Section
@@ -145,7 +168,7 @@ struct EntryEditorView: View {
                             ZStack {
                                 if viewModel.mood == mood {
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Color.diaryPurple.opacity(0.3))
+                                        .fill(theme.accent.opacity(0.3))
                                         .frame(width: 52, height: 52)
                                 }
                                 Text(mood.emoji)
@@ -154,7 +177,7 @@ struct EntryEditorView: View {
                             }
                             Text(mood.label)
                                 .font(.system(size: 10))
-                                .foregroundStyle(viewModel.mood == mood ? Color.diaryPurpleLight : Color.diaryTertiary)
+                                .foregroundStyle(viewModel.mood == mood ? theme.accentLight : Color.diaryTertiary)
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -176,7 +199,7 @@ struct EntryEditorView: View {
                         HStack(spacing: 4) {
                             Text("#\(tag)")
                                 .font(.system(size: 13, weight: .medium))
-                                .foregroundStyle(Color.diaryPurpleLight)
+                                .foregroundStyle(theme.accentLight)
                             Button(action: { viewModel.removeTag(tag) }) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 10, weight: .bold))
@@ -185,11 +208,10 @@ struct EntryEditorView: View {
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
-                        .background(Color.diaryPurple.opacity(0.2))
+                        .background(theme.accent.opacity(0.2))
                         .clipShape(Capsule())
                     }
 
-                    // Add tag input
                     HStack(spacing: 4) {
                         TextField("+ Додати", text: $viewModel.tagInput)
                             .font(.system(size: 13))
@@ -200,7 +222,7 @@ struct EntryEditorView: View {
                             Button(action: viewModel.addTag) {
                                 Image(systemName: "return")
                                     .font(.system(size: 11))
-                                    .foregroundStyle(Color.diaryPurple)
+                                    .foregroundStyle(theme.accent)
                             }
                         }
                     }
@@ -225,14 +247,13 @@ struct EntryEditorView: View {
                         .padding(.leading, 4)
                         .allowsHitTesting(false)
                 }
-                TextEditor(text: $viewModel.text)
-                    .font(.system(size: 16))
-                    .foregroundStyle(Color.diaryPrimaryText)
-                    .scrollContentBackground(.hidden)
-                    .background(Color.clear)
-                    .frame(minHeight: 200)
-                    .focused($isTextFocused)
-                    .onChange(of: viewModel.text) { _, _ in viewModel.updateWordCount() }
+                MarkdownTextEditor(
+                    text: $viewModel.text,
+                    controller: editorController,
+                    onFocusChange: { isTextFocused = $0 },
+                    onTextChange: { viewModel.updateWordCount() }
+                )
+                .frame(minHeight: 200)
             }
 
             if viewModel.wordCount > 0 {
@@ -259,7 +280,9 @@ struct EntryEditorView: View {
     private var markdownToolbar: some View {
         HStack(spacing: 0) {
             ForEach(MarkdownFormat.allCases, id: \.self) { format in
-                Button(action: { viewModel.applyFormat(format) }) {
+                Button(action: {
+                    editorController.applyFormat(prefix: format.prefix, suffix: format.suffix)
+                }) {
                     Image(systemName: format.icon)
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Color.diarySecondary)
@@ -267,7 +290,7 @@ struct EntryEditorView: View {
                         .frame(height: 44)
                 }
             }
-            Button(action: { isTextFocused = false }) {
+            Button(action: { editorController.resignFocus() }) {
                 Image(systemName: "keyboard.chevron.compact.down")
                     .font(.system(size: 16))
                     .foregroundStyle(Color.diarySecondary)
@@ -280,4 +303,5 @@ struct EntryEditorView: View {
 
 #Preview {
     EntryEditorView(entry: nil)
+        .environmentObject(AppTheme())
 }

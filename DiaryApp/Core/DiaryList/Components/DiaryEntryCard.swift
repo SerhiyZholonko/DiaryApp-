@@ -6,6 +6,7 @@ struct DiaryEntryCard: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
 
+    @EnvironmentObject private var theme: AppTheme
     @State private var showDeleteConfirm = false
 
     private var timeString: String {
@@ -55,7 +56,6 @@ struct DiaryEntryCard: View {
         .padding(16)
         .background(Color.diaryCard)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        // Swipe-to-delete
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 showDeleteConfirm = true
@@ -65,9 +65,8 @@ struct DiaryEntryCard: View {
             Button(action: onEdit) {
                 Label("Редагувати", systemImage: "pencil")
             }
-            .tint(Color.diaryPurple)
+            .tint(theme.accent)
         }
-        // Long-press context menu
         .contextMenu {
             Button(action: onEdit) {
                 Label("Редагувати", systemImage: "pencil")
@@ -105,13 +104,15 @@ struct DiaryEntryCard: View {
 struct TagChip: View {
     let text: String
 
+    @EnvironmentObject private var theme: AppTheme
+
     var body: some View {
         Text(text)
             .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(Color.diaryPurpleLight)
+            .foregroundStyle(theme.accentLight)
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(Color.diaryPurple.opacity(0.2))
+            .background(theme.accent.opacity(0.2))
             .clipShape(Capsule())
     }
 }
@@ -128,5 +129,6 @@ struct TagChip: View {
     )
     .padding()
     .background(Color.diaryBackground)
+    .environmentObject(AppTheme())
     .preferredColorScheme(.dark)
 }

@@ -3,6 +3,7 @@
 import SwiftUI
 
 struct SearchView: View {
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = SearchViewModel()
     @State private var entryToEdit: DiaryEntry?
 
@@ -23,7 +24,7 @@ struct SearchView: View {
                     TextField("Пошук у записах...", text: $viewModel.query)
                         .font(.system(size: 16))
                         .foregroundStyle(Color.diaryPrimaryText)
-                        .tint(Color.diaryPurple)
+                        .tint(theme.accent)
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
@@ -66,7 +67,6 @@ struct SearchView: View {
                     }
                 }
 
-                // Results
                 if viewModel.query.isEmpty && viewModel.selectedFilter == .all {
                     emptyPrompt
                 } else {
@@ -136,6 +136,8 @@ struct FilterChip: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @EnvironmentObject private var theme: AppTheme
+
     var body: some View {
         Button(action: action) {
             Text(label)
@@ -143,7 +145,7 @@ struct FilterChip: View {
                 .foregroundStyle(isSelected ? .white : Color.diarySecondary)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 8)
-                .background(isSelected ? Color.diaryPurple : Color.diaryCard)
+                .background(isSelected ? theme.accent : Color.diaryCard)
                 .clipShape(Capsule())
         }
     }
@@ -151,5 +153,6 @@ struct FilterChip: View {
 
 #Preview {
     SearchView()
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

@@ -23,7 +23,7 @@ struct ExpandableFABView: View {
                         withAnimation(.spring()) { isExpanded = false }
                     } label: {
                         HStack(spacing: 8) {
-                            Text(action.title).font(.callout).textColor()
+                            Text(action.title).font(.callout).foregroundStyle(Color.diaryPrimaryText)
                             Image(systemName: action.icon)
                                 .foregroundStyle(.white)
                                 .frame(width: 44, height: 44)

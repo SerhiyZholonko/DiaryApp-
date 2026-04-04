@@ -8,6 +8,7 @@ enum DiaryTab: Int, CaseIterable {
 struct MainTabView: View {
     let onSignOut: () -> Void
 
+    @EnvironmentObject private var theme: AppTheme
     @State private var selectedTab: DiaryTab = .diary
     @State private var showingEditor = false
 
@@ -24,11 +25,11 @@ struct MainTabView: View {
     @ViewBuilder
     private var currentScreen: some View {
         switch selectedTab {
-        case .diary:   DiaryListView(onNewEntry: { showingEditor = true })
-        case .stats:   StatsView()
+        case .diary:    DiaryListView(onNewEntry: { showingEditor = true })
+        case .stats:    StatsView()
         case .newEntry: DiaryListView(onNewEntry: { showingEditor = true })
-        case .search:  SearchView()
-        case .profile: SettingsView(onSignOut: onSignOut)
+        case .search:   SearchView()
+        case .profile:  SettingsView(onSignOut: onSignOut)
         }
     }
 }
@@ -38,6 +39,8 @@ struct MainTabView: View {
 struct CustomTabBar: View {
     @Binding var selected: DiaryTab
     let onNewEntry: () -> Void
+
+    @EnvironmentObject private var theme: AppTheme
 
     var body: some View {
         HStack(spacing: 0) {
@@ -50,13 +53,13 @@ struct CustomTabBar: View {
                     Circle()
                         .fill(
                             LinearGradient(
-                                colors: [Color.diaryPurple, Color.diaryPurpleLight],
+                                colors: [theme.accent, theme.accentLight],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                         .frame(width: 52, height: 52)
-                        .shadow(color: Color.diaryPurple.opacity(0.4), radius: 8, y: 4)
+                        .shadow(color: theme.accent.opacity(0.4), radius: 8, y: 4)
                     Image(systemName: "plus")
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(.white)
@@ -75,12 +78,19 @@ struct CustomTabBar: View {
             Color.diaryCard
                 .ignoresSafeArea(edges: .bottom)
         )
-        .overlay(
-            Rectangle()
-                .frame(height: 0.5)
-                .foregroundStyle(Color.diaryDivider),
-            alignment: .top
-        )
+        .overlay(alignment: .top) {
+            GeometryReader { proxy in
+                let gap: CGFloat = 72
+                let side = (proxy.size.width - gap) / 2
+                HStack(spacing: 0) {
+                    Rectangle().frame(width: side, height: 0.5)
+                    Spacer()
+                    Rectangle().frame(width: side, height: 0.5)
+                }
+                .foregroundStyle(Color.diaryDivider)
+            }
+            .frame(height: 0.5)
+        }
     }
 }
 
@@ -91,13 +101,15 @@ struct TabBarItem: View {
     let tab: DiaryTab
     @Binding var selected: DiaryTab
 
+    @EnvironmentObject private var theme: AppTheme
+
     private var isSelected: Bool { selected == tab }
 
     var body: some View {
         Button { selected = tab } label: {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundStyle(isSelected ? Color.diaryPurple : Color.diaryTertiary)
+                .foregroundStyle(isSelected ? theme.accent : Color.diaryTertiary)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
         }
@@ -107,5 +119,6 @@ struct TabBarItem: View {
 
 #Preview {
     MainTabView(onSignOut: {})
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

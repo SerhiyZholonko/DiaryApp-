@@ -1,9 +1,10 @@
 // MARK: - Mood Picker View
-// Горизонтальний рядок вибору настрою.
+// Горизонтальний рядок вибору настрою (використовується в EntryEditorView).
 import SwiftUI
 
 struct MoodPickerView: View {
     @Binding var selected: MoodLevel?
+    @EnvironmentObject private var theme: AppTheme
 
     var body: some View {
         HStack(spacing: 0) {
@@ -12,7 +13,7 @@ struct MoodPickerView: View {
                     ZStack {
                         if selected == mood {
                             Circle()
-                                .fill(Color.diaryPurple.opacity(0.25))
+                                .fill(theme.accent.opacity(0.25))
                                 .frame(width: 52, height: 52)
                         }
                         Text(mood.emoji)
@@ -30,5 +31,6 @@ struct MoodPickerView: View {
     MoodPickerView(selected: .constant(.good))
         .padding()
         .background(Color.diaryCard)
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

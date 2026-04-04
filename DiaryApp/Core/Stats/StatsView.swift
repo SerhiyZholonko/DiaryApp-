@@ -4,6 +4,7 @@ import SwiftUI
 import Charts
 
 struct StatsView: View {
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = StatsViewModel()
 
     var body: some View {
@@ -108,7 +109,7 @@ struct StatsView: View {
                         }
                         .chartYScale(domain: 1...5)
                         .chartXAxis {
-                            AxisMarks(values: .stride(by: 5)) { _ in
+                            AxisMarks(values: [5, 10, 15, 20, 25, 30]) { _ in
                                 AxisValueLabel()
                                     .foregroundStyle(Color.diaryTertiary)
                             }
@@ -137,6 +138,7 @@ struct StatsView: View {
                 HeatmapView(data: viewModel.activityData)
                     .padding(16)
             }
+            .defaultScrollAnchor(.trailing)
             .background(Color.diaryCard)
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
@@ -168,7 +170,7 @@ struct StatsView: View {
                         }
                         GeometryReader { geo in
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.diaryPurple)
+                                .fill(theme.accent)
                                 .frame(width: geo.size.width * CGFloat(item.count) / CGFloat(maxCount), height: 6)
                         }
                         .frame(height: 6)
@@ -223,6 +225,7 @@ struct StatCard: View {
 struct HeatmapView: View {
     let data: [Date: Int]
 
+    @EnvironmentObject private var theme: AppTheme
     private let calendar = Calendar.current
     private let columns = 53
     private let rows = 7
@@ -249,19 +252,22 @@ struct HeatmapView: View {
     }
 
     var body: some View {
+        // Обчислюємо один раз — уникаємо 372 повторних викликів Calendar
+        let computedWeeks = weeks
+        let accent = theme.accent
+
         HStack(alignment: .top, spacing: 3) {
-            ForEach(weeks.indices, id: \.self) { weekIdx in
+            ForEach(computedWeeks.indices, id: \.self) { weekIdx in
+                let week = computedWeeks[weekIdx]
                 VStack(spacing: 3) {
                     ForEach(0..<7, id: \.self) { dayIdx in
-                        let week = weeks[weekIdx]
                         if dayIdx < week.count, let date = week[dayIdx] {
                             let count = data[date] ?? 0
                             RoundedRectangle(cornerRadius: 2)
-                                .fill(heatColor(for: count))
+                                .fill(heatColor(count, accent: accent))
                                 .frame(width: 11, height: 11)
                         } else {
-                            Color.clear
-                                .frame(width: 11, height: 11)
+                            Color.clear.frame(width: 11, height: 11)
                         }
                     }
                 }
@@ -269,17 +275,18 @@ struct HeatmapView: View {
         }
     }
 
-    private func heatColor(for count: Int) -> Color {
+    private func heatColor(_ count: Int, accent: Color) -> Color {
         switch count {
-        case 0:        return Color.diaryPurple.opacity(0.1)
-        case 1:        return Color.diaryPurple.opacity(0.35)
-        case 2:        return Color.diaryPurple.opacity(0.6)
-        default:       return Color.diaryPurple
+        case 0:    return accent.opacity(0.1)
+        case 1:    return accent.opacity(0.35)
+        case 2:    return accent.opacity(0.6)
+        default:   return accent
         }
     }
 }
 
 #Preview {
     StatsView()
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

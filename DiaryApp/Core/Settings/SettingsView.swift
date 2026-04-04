@@ -5,17 +5,8 @@ import SwiftUI
 struct SettingsView: View {
     let onSignOut: () -> Void
 
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = SettingsViewModel()
-    // Той самий ключ що й в DiaryAppApp — зміна одразу впливає на .tint()
-    @AppStorage("accent_color_idx") private var accentColorIdx = 0
-
-    private let accentColors: [Color] = [
-        Color(hex: "#7B61FF"),
-        Color(hex: "#00BCD4"),
-        Color(hex: "#F44336"),
-        Color(hex: "#4CAF50"),
-        Color(hex: "#FFD166")
-    ]
 
     var body: some View {
         ZStack {
@@ -23,7 +14,6 @@ struct SettingsView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // Profile card
                     profileCard
 
                     // Security section
@@ -33,7 +23,7 @@ struct SettingsView: View {
                                 get: { viewModel.faceIDEnabled },
                                 set: { _ in viewModel.toggleFaceID() }
                             ))
-                            .tint(Color.diaryPurple)
+                            .tint(theme.accent)
                             .font(.system(size: 16))
                             .foregroundStyle(Color.diaryPrimaryText)
                         }
@@ -56,7 +46,7 @@ struct SettingsView: View {
                                     HStack(spacing: 4) {
                                         Text(viewModel.autoLockLabel(viewModel.autoLockMinutes))
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.diaryPurpleLight)
+                                            .foregroundStyle(theme.accentLight)
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 11))
                                             .foregroundStyle(Color.diaryTertiary)
@@ -68,7 +58,7 @@ struct SettingsView: View {
 
                     // Reminders section
                     section(title: "НАГАДУВАННЯ") {
-                        settingsRow(icon: "bell.fill", iconColor: Color.diaryPurple) {
+                        settingsRow(icon: "bell.fill", iconColor: theme.accent) {
                             Toggle(isOn: Binding(
                                 get: { viewModel.reminderEnabled },
                                 set: { _ in viewModel.toggleReminder() }
@@ -81,26 +71,34 @@ struct SettingsView: View {
                                     if viewModel.reminderEnabled {
                                         Text("\(viewModel.reminderHour, specifier: "%02d"):\(viewModel.reminderMinute, specifier: "%02d")")
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.diaryPurpleLight)
+                                            .foregroundStyle(theme.accentLight)
                                     }
                                 }
                             }
-                            .tint(Color.diaryPurple)
+                            .tint(theme.accent)
                         }
 
                         if viewModel.reminderEnabled {
                             Divider().background(Color.diaryDivider).padding(.leading, 52)
-                            DatePicker(
-                                "",
-                                selection: Binding(
-                                    get: { viewModel.reminderTime },
-                                    set: { viewModel.reminderTime = $0 }
-                                ),
-                                displayedComponents: .hourAndMinute
-                            )
-                            .datePickerStyle(.wheel)
-                            .labelsHidden()
-                            .frame(maxWidth: .infinity)
+                            settingsRow(icon: "clock.fill", iconColor: theme.accent) {
+                                HStack {
+                                    Text("Час нагадування")
+                                        .font(.system(size: 16))
+                                        .foregroundStyle(Color.diaryPrimaryText)
+                                    Spacer()
+                                    DatePicker(
+                                        "",
+                                        selection: Binding(
+                                            get: { viewModel.reminderTime },
+                                            set: { viewModel.reminderTime = $0 }
+                                        ),
+                                        displayedComponents: .hourAndMinute
+                                    )
+                                    .datePickerStyle(.compact)
+                                    .labelsHidden()
+                                    .tint(theme.accent)
+                                }
+                            }
                         }
 
                         Divider().background(Color.diaryDivider).padding(.leading, 52)
@@ -118,7 +116,7 @@ struct SettingsView: View {
                                     }
                                     Text("\(viewModel.streakGoal) днів")
                                         .font(.system(size: 14))
-                                        .foregroundStyle(Color.diaryPurpleLight)
+                                        .foregroundStyle(theme.accentLight)
                                         .frame(minWidth: 60)
                                     Button(action: { viewModel.streakGoal += 1 }) {
                                         Image(systemName: "plus.circle")
@@ -145,7 +143,7 @@ struct SettingsView: View {
                                     HStack(spacing: 4) {
                                         Text(["Системна", "Темна", "Світла"][viewModel.appearanceMode])
                                             .font(.system(size: 14))
-                                            .foregroundStyle(Color.diaryPurpleLight)
+                                            .foregroundStyle(theme.accentLight)
                                         Image(systemName: "chevron.right")
                                             .font(.system(size: 11))
                                             .foregroundStyle(Color.diaryTertiary)
@@ -163,18 +161,18 @@ struct SettingsView: View {
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
                                 HStack(spacing: 8) {
-                                    ForEach(accentColors.indices, id: \.self) { idx in
+                                    ForEach(AppTheme.palette.indices, id: \.self) { idx in
                                         Circle()
-                                            .fill(accentColors[idx])
+                                            .fill(AppTheme.palette[idx])
                                             .frame(width: 24, height: 24)
                                             .overlay {
-                                                if accentColorIdx == idx {
+                                                if theme.accentIdx == idx {
                                                     Image(systemName: "checkmark")
                                                         .font(.system(size: 10, weight: .bold))
-                                                        .foregroundStyle(Color.diaryPrimaryText)
+                                                        .foregroundStyle(.white)
                                                 }
                                             }
-                                            .onTapGesture { accentColorIdx = idx }
+                                            .onTapGesture { theme.accentIdx = idx }
                                     }
                                 }
                             }
@@ -185,14 +183,13 @@ struct SettingsView: View {
                     section(title: "ДАНІ") {
                         settingsRow(icon: "icloud.fill", iconColor: Color(hex: "#4ECDC4")) {
                             Toggle("Синхронізація Firebase", isOn: .constant(false))
-                                .tint(Color.diaryPurple)
+                                .tint(theme.accent)
                                 .font(.system(size: 16))
                                 .foregroundStyle(Color.diaryPrimaryText)
                                 .disabled(true)
                         }
                     }
 
-                    // Sign out
                     Button(action: { viewModel.signOut(completion: onSignOut) }) {
                         Text("Вийти з акаунту")
                             .font(.system(size: 16, weight: .medium))
@@ -217,11 +214,11 @@ struct SettingsView: View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(Color.diaryPurple.opacity(0.3))
+                    .fill(theme.accent.opacity(0.3))
                     .frame(width: 52, height: 52)
                 Text(initials)
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(Color.diaryPurpleLight)
+                    .foregroundStyle(theme.accentLight)
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.currentUser?.displayName ?? "Користувач")
@@ -283,5 +280,6 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView(onSignOut: {})
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

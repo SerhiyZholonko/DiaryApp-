@@ -66,19 +66,7 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
         })
     }
 
-    func setTodayMood(_ mood: MoodLevel) {
-        todayMood = mood
-        UserDefaults.standard.set(mood.rawValue, forKey: todayMoodKey)
-    }
-
-    private var todayMoodKey: String {
-        let df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd"
-        return "mood_\(df.string(from: .now))"
-    }
-
     private func loadTodayMood() {
-        let raw = UserDefaults.standard.integer(forKey: todayMoodKey)
-        todayMood = raw > 0 ? MoodLevel(rawValue: raw) : nil
+        todayMood = entries.first?.mood
     }
 }

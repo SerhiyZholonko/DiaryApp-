@@ -6,7 +6,7 @@ import Factory
 extension View {
     @MainActor
     func injectMockData() -> some View {
-        Container.shared.diaryStore.register { MockDiaryStore() }
+        Container.shared.diaryStore.register { MainActor.assumeIsolated { MockDiaryStore() } }
         return self
     }
 }

@@ -5,6 +5,7 @@ import SwiftUI
 struct AuthView: View {
     let onSignedIn: (AppUser) -> Void
 
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = AuthViewModel()
 
     var body: some View {
@@ -13,13 +14,13 @@ struct AuthView: View {
 
             // Background glows
             Circle()
-                .fill(Color.diaryPurple.opacity(0.2))
+                .fill(theme.accent.opacity(0.2))
                 .frame(width: 400, height: 400)
                 .blur(radius: 100)
                 .offset(x: -80, y: -250)
 
             Circle()
-                .fill(Color.diaryPurpleLight.opacity(0.1))
+                .fill(theme.accentLight.opacity(0.1))
                 .frame(width: 300, height: 300)
                 .blur(radius: 80)
                 .offset(x: 120, y: 200)
@@ -33,7 +34,7 @@ struct AuthView: View {
                         RoundedRectangle(cornerRadius: 22)
                             .fill(
                                 LinearGradient(
-                                    colors: [Color.diaryPurple, Color.diaryPurpleLight],
+                                    colors: [theme.accent, theme.accentLight],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -46,7 +47,7 @@ struct AuthView: View {
 
                     Text("Diary")
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundStyle(Color.diaryPurpleLight)
+                        .foregroundStyle(theme.accentLight)
 
                     Text("Твоє особисте місце для думок")
                         .font(.system(size: 15))
@@ -138,4 +139,5 @@ struct AuthView: View {
 
 #Preview {
     AuthView(onSignedIn: { _ in })
+        .environmentObject(AppTheme())
 }

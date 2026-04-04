@@ -1,10 +1,11 @@
 // MARK: - Diary List View
-// Головний екран: список записів + вибір настрою.
+// Головний екран: список записів + відображення настрою.
 import SwiftUI
 
 struct DiaryListView: View {
     let onNewEntry: () -> Void
 
+    @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = DiaryListViewModel()
     @State private var entryToEdit: DiaryEntry?
 
@@ -29,17 +30,28 @@ struct DiaryListView: View {
                             .padding(.vertical, 4)
                     }
 
-                    // Mood picker
+                    // Mood display (read-only)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Настрій сьогодні")
                             .font(.system(size: 13))
                             .foregroundStyle(Color.diarySecondary)
                             .padding(.horizontal, 20)
 
-                        MoodPickerView(selected: Binding(
-                            get: { viewModel.todayMood },
-                            set: { viewModel.setTodayMood($0 ?? .neutral) }
-                        ))
+                        HStack(spacing: 0) {
+                            ForEach(MoodLevel.allCases) { mood in
+                                ZStack {
+                                    if viewModel.todayMood == mood {
+                                        Circle()
+                                            .fill(theme.accent.opacity(0.25))
+                                            .frame(width: 52, height: 52)
+                                    }
+                                    Text(mood.emoji)
+                                        .font(.system(size: 30))
+                                        .scaleEffect(viewModel.todayMood == mood ? 1.15 : 1.0)
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
                         .padding(.horizontal, 12)
                     }
                     .padding(.vertical, 12)
@@ -86,7 +98,7 @@ struct DiaryListView: View {
                         }
                     }
 
-                    Spacer().frame(height: 90) // tab bar padding
+                    Spacer().frame(height: 90)
                 }
             }
         }
@@ -103,11 +115,11 @@ struct DiaryListView: View {
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.diaryPurple.opacity(0.2))
+                        .fill(theme.accent.opacity(0.2))
                         .frame(width: 36, height: 36)
                     Image(systemName: "doc.text.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(Color.diaryPurple)
+                        .foregroundStyle(theme.accent)
                 }
                 Text("Мій Щоденник")
                     .font(.system(size: 22, weight: .bold))
@@ -137,7 +149,7 @@ struct DiaryListView: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
-                    .background(Color.diaryPurple)
+                    .background(theme.accent)
                     .clipShape(Capsule())
             }
         }
@@ -175,5 +187,6 @@ struct StreakBadge: View {
 
 #Preview {
     DiaryListView(onNewEntry: {})
+        .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }
