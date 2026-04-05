@@ -9,6 +9,8 @@ struct EntryEditorView: View {
     @State private var isTextFocused = false
     @StateObject private var editorController = MarkdownEditorController()
     @State private var showPreview: Bool
+    @State private var showMediaPicker = false
+    @State private var fullscreenIndex: Int?
 
     init(entry: DiaryEntry?) {
         _viewModel = StateObject(wrappedValue: EntryEditorViewModel(entry: entry))
@@ -28,6 +30,11 @@ struct EntryEditorView: View {
 
                         if !showPreview { moodSection }
                         if !showPreview { tagsSection }
+
+                        // Media thumbnails
+                        if !viewModel.attachments.isEmpty {
+                            mediaStrip
+                        }
 
                         // Edit / Preview toggle
                         editPreviewToggle
@@ -52,6 +59,31 @@ struct EntryEditorView: View {
         .showError(viewModel: viewModel)
         .onAppear {
             viewModel.onDismiss = { dismiss() }
+        }
+        .sheet(isPresented: $showMediaPicker) {
+            MediaPickerSheet(
+                isPresented: $showMediaPicker,
+                onImages: { viewModel.addPhotos($0) },
+                onVideos: { viewModel.addVideos($0) },
+                onAudio:  { viewModel.addAudio($0) }
+            )
+            .presentationDetents([.medium])
+            .environmentObject(theme)
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { fullscreenIndex != nil },
+            set: { if !$0 { fullscreenIndex = nil } }
+        )) {
+            if let idx = fullscreenIndex {
+                MediaFullscreenView(
+                    attachments: viewModel.attachments,
+                    entryId: viewModel.entryId,
+                    selectedIndex: Binding(
+                        get: { fullscreenIndex ?? idx },
+                        set: { fullscreenIndex = $0 }
+                    )
+                )
+            }
         }
     }
 
@@ -306,9 +338,36 @@ struct EntryEditorView: View {
             .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
+    // MARK: - Media Strip
+    private var mediaStrip: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Медіа")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.diarySecondary)
+
+            // Від'їжджаємо за межі горизонтального padding батька
+            MediaThumbnailStrip(
+                entryId: viewModel.entryId,
+                attachments: viewModel.attachments,
+                onRemove: { viewModel.removeAttachment($0) },
+                onTap: { fullscreenIndex = $0 }
+            )
+            .padding(.horizontal, -20)
+        }
+    }
+
     // MARK: - Markdown Toolbar
     private var markdownToolbar: some View {
         HStack(spacing: 0) {
+            Button(action: { showMediaPicker = true }) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 16))
+                    .foregroundStyle(Color.diarySecondary)
+                    .frame(width: 44, height: 44)
+            }
+
+            Divider().frame(height: 20).padding(.horizontal, 2)
+
             ForEach(MarkdownFormat.allCases, id: \.self) { format in
                 Button(action: {
                     editorController.applyFormat(prefix: format.prefix, suffix: format.suffix)

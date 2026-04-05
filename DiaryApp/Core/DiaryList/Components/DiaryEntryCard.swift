@@ -23,6 +23,8 @@ struct DiaryEntryCard: View {
         return formatter.string(from: entry.createdAt)
     }
 
+    @State private var fullscreenIndex: Int?
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -41,12 +43,21 @@ struct DiaryEntryCard: View {
                 .lineLimit(3)
                 .fixedSize(horizontal: false, vertical: true)
 
+            // Media preview thumbnails
+            if !entry.attachments.isEmpty {
+                mediaPreview
+            }
+
             HStack(spacing: 8) {
                 ForEach(entry.tags.prefix(3), id: \.self) { tag in
                     TagChip(text: "#\(tag)")
                 }
                 Spacer()
-                if entry.wordCount > 0 {
+                if !entry.attachments.isEmpty {
+                    Label("\(entry.attachments.count)", systemImage: "photo")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.diaryTertiary)
+                } else if entry.wordCount > 0 {
                     Text("\(entry.wordCount) \(wordLabel(entry.wordCount))")
                         .font(.system(size: 12))
                         .foregroundStyle(Color.diaryTertiary)
@@ -87,6 +98,49 @@ struct DiaryEntryCard: View {
             Button("Скасувати", role: .cancel) {}
         } message: {
             Text("Цю дію неможливо скасувати")
+        }
+    }
+
+    // MARK: - Media Preview
+
+    private var mediaPreview: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(entry.attachments.prefix(4).enumerated()), id: \.element.id) { idx, att in
+                MediaThumbnailCell(
+                    attachment: att,
+                    entryId: entry.id,
+                    showRemove: false,
+                    size: 64,
+                    onRemove: {},
+                    onTap: { fullscreenIndex = idx }
+                )
+            }
+
+            if entry.attachments.count > 4 {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.diaryCard)
+                        .frame(width: 64, height: 64)
+                    Text("+\(entry.attachments.count - 4)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.diarySecondary)
+                }
+            }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { fullscreenIndex != nil },
+            set: { if !$0 { fullscreenIndex = nil } }
+        )) {
+            if let idx = fullscreenIndex {
+                MediaFullscreenView(
+                    attachments: entry.attachments,
+                    entryId: entry.id,
+                    selectedIndex: Binding(
+                        get: { fullscreenIndex ?? idx },
+                        set: { fullscreenIndex = $0 }
+                    )
+                )
+            }
         }
     }
 

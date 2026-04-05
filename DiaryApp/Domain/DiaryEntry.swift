@@ -8,6 +8,7 @@ struct DiaryEntry: Identifiable, Codable {
     var text: String
     var mood: MoodLevel?
     var tags: [String]
+    var attachments: [MediaAttachment]
     var createdAt: Date
     var updatedAt: Date
 
@@ -30,6 +31,7 @@ struct DiaryEntry: Identifiable, Codable {
         text: String = "",
         mood: MoodLevel? = nil,
         tags: [String] = [],
+        attachments: [MediaAttachment] = [],
         createdAt: Date = .now,
         updatedAt: Date = .now
     ) {
@@ -37,6 +39,7 @@ struct DiaryEntry: Identifiable, Codable {
         self.text = text
         self.mood = mood
         self.tags = tags
+        self.attachments = attachments
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }

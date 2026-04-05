@@ -1,5 +1,6 @@
 // MARK: - Entry Editor ViewModel
 import Foundation
+import UIKit
 import Factory
 import Combine
 
@@ -9,6 +10,7 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
     @Published var mood: MoodLevel?
     @Published var tags: [String] = []
     @Published var tagInput: String = ""
+    @Published var attachments: [MediaAttachment] = []
     @Published var isSaving = false
     @Published var wordCount = 0
     @Published var error: Error?
@@ -36,14 +38,17 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
     var date: Date { createdAt }
     var isEditing: Bool
 
+    var entryId: String { entryID }
+
     init(entry: DiaryEntry?) {
         self.entryID   = entry?.id ?? UUID().uuidString
         self.createdAt = entry?.createdAt ?? .now
         self.isEditing = entry != nil
         if let entry {
-            self.text = entry.text
-            self.mood = entry.mood
-            self.tags = entry.tags
+            self.text        = entry.text
+            self.mood        = entry.mood
+            self.tags        = entry.tags
+            self.attachments = entry.attachments
         }
         setupAutoSave()
         loadAllTags()
@@ -100,14 +105,55 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
         }
     }
 
+    // MARK: - Media
+
+    func addPhotos(_ images: [UIImage]) {
+        let eid = entryID
+        Task {
+            var added: [MediaAttachment] = []
+            for image in images {
+                if let att = MediaStore.shared.savePhoto(image, entryId: eid) { added.append(att) }
+            }
+            attachments.append(contentsOf: added)
+        }
+    }
+
+    func addVideos(_ urls: [URL]) {
+        let eid = entryID
+        Task {
+            var added: [MediaAttachment] = []
+            for url in urls {
+                if let att = MediaStore.shared.saveVideo(from: url, entryId: eid) { added.append(att) }
+            }
+            attachments.append(contentsOf: added)
+        }
+    }
+
+    func addAudio(_ url: URL) {
+        let eid = entryID
+        Task {
+            if let att = MediaStore.shared.saveAudio(from: url, entryId: eid) {
+                attachments.append(att)
+            }
+        }
+    }
+
+    func removeAttachment(_ attachment: MediaAttachment) {
+        attachments.removeAll { $0.id == attachment.id }
+        let att = attachment
+        let eid = entryID
+        Task { MediaStore.shared.delete(att, entryId: eid) }
+    }
+
     private func buildEntry() -> DiaryEntry {
         DiaryEntry(
-            id:        entryID,
-            text:      text,
-            mood:      mood,
-            tags:      tags,
-            createdAt: createdAt,
-            updatedAt: .now
+            id:          entryID,
+            text:        text,
+            mood:        mood,
+            tags:        tags,
+            attachments: attachments,
+            createdAt:   createdAt,
+            updatedAt:   .now
         )
     }
 

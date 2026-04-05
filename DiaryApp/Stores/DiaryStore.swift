@@ -16,6 +16,9 @@ final class DiaryStore: DiaryStoreProtocol {
         return db.collection("users").document(uid).collection("entries")
     }
 
+    // Firestore mapping is in the extension below
+    // MediaStore handles local/iCloud file storage; Firestore stores only metadata
+
     func fetchEntries() async throws -> [DiaryEntry] {
         let ref = try entriesRef()
         let snapshot = try await ref
@@ -32,6 +35,7 @@ final class DiaryStore: DiaryStoreProtocol {
     func deleteEntry(id: String) async throws {
         let ref = try entriesRef()
         try await ref.document(id).delete()
+        MediaStore.shared.deleteAll(entryId: id)
     }
 
     func searchEntries(query: String) async throws -> [DiaryEntry] {
@@ -69,6 +73,19 @@ private extension DiaryEntry {
         } else {
             self.mood = nil
         }
+        if let raw = d["attachments"] as? [[String: Any]] {
+            self.attachments = raw.compactMap { a -> MediaAttachment? in
+                guard let id       = a["id"]       as? String,
+                      let typeRaw  = a["type"]      as? String,
+                      let type     = MediaAttachment.MediaType(rawValue: typeRaw),
+                      let fileName = a["fileName"]  as? String
+                else { return nil }
+                return MediaAttachment(id: id, type: type, fileName: fileName,
+                                       thumbnailName: a["thumbnailName"] as? String)
+            }
+        } else {
+            self.attachments = []
+        }
     }
 
     var firestoreData: [String: Any] {
@@ -79,6 +96,13 @@ private extension DiaryEntry {
             "updatedAt": Timestamp(date: updatedAt)
         ]
         if let mood { data["mood"] = mood.rawValue }
+        if !attachments.isEmpty {
+            data["attachments"] = attachments.map { a -> [String: Any] in
+                var d: [String: Any] = ["id": a.id, "type": a.type.rawValue, "fileName": a.fileName]
+                if let thumb = a.thumbnailName { d["thumbnailName"] = thumb }
+                return d
+            }
+        }
         return data
     }
 }

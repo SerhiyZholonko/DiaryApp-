@@ -4,6 +4,12 @@
 <dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Щоденник використовує Face ID для захисту ваших записів</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Для прикріплення фото до запису</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Для вибору фото та відео з галереї</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Для запису голосових нотаток</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
