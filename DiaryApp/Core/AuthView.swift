@@ -99,8 +99,8 @@ struct AuthView: View {
                         Rectangle().fill(Color.diaryDivider).frame(height: 1)
                     }
 
-                    // Apple button (disabled — coming soon)
-                    Button(action: {}) {
+                    // Apple button
+                    Button(action: viewModel.signInWithApple) {
                         HStack(spacing: 12) {
                             Image(systemName: "apple.logo")
                                 .font(.system(size: 18))
@@ -113,8 +113,7 @@ struct AuthView: View {
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .disabled(true)
-                    .opacity(0.5)
+                    .disabled(viewModel.isLoading)
 
                     Text("Продовжуючи, ти погоджуєшся з Умовами та Політикою конфіденційності")
                         .font(.system(size: 11))

@@ -55,6 +55,7 @@ struct StatsView: View {
             }
         }
         .onAppear { viewModel.load() }
+        .onChange(of: viewModel.selectedMonth) { _ in viewModel.computeStats() }
     }
 
     // MARK: - Month selector
@@ -115,24 +116,32 @@ struct StatsView: View {
                         .frame(width: 24)
                         .frame(height: 140)
 
-                        Chart(viewModel.moodChartData, id: \.day) { item in
-                            BarMark(
-                                x: .value("День", item.day),
-                                y: .value("Настрій", item.mood),
-                                width: .fixed(6)
-                            )
-                            .foregroundStyle(moodColor(for: item.mood))
-                            .cornerRadius(3)
-                        }
-                        .chartYScale(domain: 1...5)
-                        .chartXScale(domain: 1...31)
-                        .chartXAxis {
-                            AxisMarks(values: [5, 10, 15, 20, 25, 30]) { _ in
-                                AxisValueLabel()
-                                    .foregroundStyle(Color.diaryTertiary)
+                        GeometryReader { geo in
+                            let days = daysInSelectedMonth
+                            // Залишаємо ~32pt для Y-лейблів; решта — сітка барів
+                            let chartWidth = geo.size.width - 32
+                            let barWidth   = max(4, (chartWidth / CGFloat(days)) * 0.65)
+
+                            Chart(viewModel.moodChartData, id: \.day) { item in
+                                BarMark(
+                                    x: .value("День", item.day),
+                                    y: .value("Настрій", item.mood),
+                                    width: .fixed(barWidth)
+                                )
+                                .foregroundStyle(moodColor(for: item.mood))
+                                .cornerRadius(max(2, barWidth / 3))
                             }
+                            .chartYScale(domain: 1...5)
+                            .chartXScale(domain: 1...days)
+                            .chartXAxis {
+                                AxisMarks(values: stride(from: 5, through: days, by: 5).map { $0 }) { _ in
+                                    AxisValueLabel()
+                                        .foregroundStyle(Color.diaryTertiary)
+                                }
+                            }
+                            .chartYAxis(.hidden)
+                            .frame(width: geo.size.width, height: 140)
                         }
-                        .chartYAxis(.hidden)
                         .frame(maxWidth: .infinity)
                         .frame(height: 140)
                     }
@@ -199,6 +208,10 @@ struct StatsView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
         }
+    }
+
+    private var daysInSelectedMonth: Int {
+        Calendar.current.range(of: .day, in: .month, for: viewModel.selectedMonth)?.count ?? 31
     }
 
     private func moodColor(for value: Double) -> Color {

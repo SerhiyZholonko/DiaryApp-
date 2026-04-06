@@ -65,7 +65,8 @@ struct EntryEditorView: View {
                 isPresented: $showMediaPicker,
                 onImages: { viewModel.addPhotos($0) },
                 onVideos: { viewModel.addVideos($0) },
-                onAudio:  { viewModel.addAudio($0) }
+                onAudio:  { viewModel.addAudio($0) },
+                onTranscription: { viewModel.insertTranscription($0) }
             )
             .presentationDetents([.medium])
             .environmentObject(theme)

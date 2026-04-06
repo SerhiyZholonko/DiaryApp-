@@ -22,6 +22,9 @@ final class SettingsViewModel: ObservableObject, ErrorDisplayable, AlertDisplaya
     // Appearance
     @AppStorage("appearance_mode")   var appearanceMode  = 0 // 0=system, 1=dark, 2=light
 
+    // AI
+    @AppStorage("ai_insights_enabled") var aiInsightsEnabled = true
+
     @Injected(\.authStore) private var authStore: AuthStoreProtocol
 
     var currentUser: AppUser? { AppSession.shared.currentUser }

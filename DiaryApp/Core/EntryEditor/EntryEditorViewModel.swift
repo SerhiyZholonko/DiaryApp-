@@ -138,6 +138,15 @@ final class EntryEditorViewModel: ObservableObject, ErrorDisplayable, AlertDispl
         }
     }
 
+    func insertTranscription(_ transcribed: String) {
+        if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            text = transcribed
+        } else {
+            text += "\n\n" + transcribed
+        }
+        updateWordCount()
+    }
+
     func removeAttachment(_ attachment: MediaAttachment) {
         attachments.removeAll { $0.id == attachment.id }
         let att = attachment

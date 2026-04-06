@@ -19,6 +19,7 @@ struct MainTabView: View {
             }
             .sheet(isPresented: $showingEditor) {
                 EntryEditorView(entry: nil)
+                    .environmentObject(theme)
             }
     }
 

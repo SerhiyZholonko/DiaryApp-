@@ -2,26 +2,30 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Щоденник використовує Face ID для захисту ваших записів</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Для прикріплення фото до запису</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Для вибору фото та відео з галереї</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Для запису голосових нотаток</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeRole</key>
-			<string>Editor</string>
-			<key>CFBundleURLName</key>
-			<string>GoogleSignIn</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.243395965493-2650c3fs3mt1osq0s5dh6s2rcqu0cma9</string>
-			</array>
-		</dict>
-	</array>
+    <key>NSFaceIDUsageDescription</key>
+    <string>Щоденник використовує Face ID для захисту ваших записів</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Для прикріплення фото до запису</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Для вибору фото та відео з галереї</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Для запису голосових нотаток</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Для перетворення голосових нотаток у текст</string>
+    <key>FirebaseInAppMessagingEnabled</key>
+    <false/>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+            <key>CFBundleURLName</key>
+            <string>GoogleSignIn</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>com.googleusercontent.apps.243395965493-2650c3fs3mt1osq0s5dh6s2rcqu0cma9</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>

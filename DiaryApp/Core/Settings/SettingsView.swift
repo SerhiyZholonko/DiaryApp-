@@ -195,15 +195,20 @@ struct SettingsView: View {
                         }
                     }
 
-                    // Data section
-                    section(title: "ДАНІ") {
-                        settingsRow(icon: "icloud.fill", iconColor: Color(hex: "#4ECDC4")) {
-                            Toggle("Синхронізація Firebase", isOn: .constant(false))
-                                .tint(theme.accent)
-                                .font(.system(size: 16))
-                                .foregroundStyle(Color.diaryPrimaryText)
-                                .disabled(true)
+                    // AI section
+                    section(title: "ШІ ПОМІЧНИК") {
+                        settingsRow(icon: "sparkles", iconColor: theme.accent) {
+                            Toggle(isOn: Binding(
+                                get: { viewModel.aiInsightsEnabled },
+                                set: { viewModel.aiInsightsEnabled = $0 }
+                            )) {
+                                Text("AI-підказки")
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(Color.diaryPrimaryText)
+                            }
+                            .tint(theme.accent)
                         }
+
                     }
 
                     Button(action: { viewModel.signOut(completion: onSignOut) }) {

@@ -8,4 +8,6 @@ protocol StreakStoreProtocol {
     var lastEntryDate: Date? { get }
     func recordEntry(for date: Date)
     func hasEntryToday() -> Bool
+    /// Перераховує серію з реальних дат записів (викликати після завантаження з Firestore).
+    func recalculate(from dates: [Date])
 }

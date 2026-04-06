@@ -40,4 +40,45 @@ final class StreakStore: StreakStoreProtocol {
         if newStreak > longestStreak { setLongestStreak(newStreak) }
         setLastEntryDate(date)
     }
+
+    /// Перераховує поточну і найдовшу серію з реальних дат записів.
+    /// Викликається після завантаження записів з Firestore, щоб відновити
+    /// коректні значення на новому пристрої або при першому вході.
+    func recalculate(from dates: [Date]) {
+        guard !dates.isEmpty else { return }
+
+        let calendar = Calendar.current
+
+        // Унікальні дні (без часу), відсортовані за зростанням
+        let days = Array(
+            Set(dates.map { calendar.startOfDay(for: $0) })
+        ).sorted()
+
+        // Підраховуємо найдовшу серію
+        var longest = 1
+        var run     = 1
+        for i in 1 ..< days.count {
+            let diff = calendar.dateComponents([.day], from: days[i - 1], to: days[i]).day ?? 0
+            run = (diff == 1) ? run + 1 : 1
+            if run > longest { longest = run }
+        }
+
+        // Підраховуємо поточну серію (йдемо назад від сьогодні або вчора)
+        let today     = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+        var current   = 0
+
+        if let last = days.last, last == today || last == yesterday {
+            current = 1
+            var cursor = last
+            for day in days.dropLast().reversed() {
+                let prev = calendar.date(byAdding: .day, value: -1, to: cursor)!
+                if day == prev { current += 1; cursor = day } else { break }
+            }
+        }
+
+        setCurrentStreak(current)
+        if longest > longestStreak { setLongestStreak(longest) }
+        if let last = days.last { setLastEntryDate(last) }
+    }
 }

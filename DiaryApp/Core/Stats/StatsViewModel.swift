@@ -22,14 +22,6 @@ final class StatsViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable
     @Injected(\.streakStore) private var streakStore: StreakStoreProtocol
 
     private var entries: [DiaryEntry] = []
-    private var cancellables = Set<AnyCancellable>()
-
-    init() {
-        // Перераховуємо статистику лише при зміні місяця
-        $selectedMonth
-            .sink { [weak self] _ in self?.computeStats() }
-            .store(in: &cancellables)
-    }
 
     func load() {
         Task {
@@ -46,7 +38,7 @@ final class StatsViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable
 
     // MARK: - Private
 
-    private func computeStats() {
+    func computeStats() {
         let entries = self.entries
         let month = selectedMonth
         currentStreak = streakStore.currentStreak

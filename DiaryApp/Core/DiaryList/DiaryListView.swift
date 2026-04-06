@@ -8,6 +8,7 @@ struct DiaryListView: View {
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = DiaryListViewModel()
     @State private var entryToEdit: DiaryEntry?
+    @AppStorage("ai_insights_enabled") private var aiInsightsEnabled = true
 
     var body: some View {
         ZStack {
@@ -63,6 +64,13 @@ struct DiaryListView: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 8)
 
+                    // AI Insights Card
+                    if aiInsightsEnabled {
+                        AIInsightsCard()
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 12)
+                    }
+
                     // Entries
                     if viewModel.isLoading {
                         ForEach(0..<3, id: \.self) { _ in
@@ -104,6 +112,7 @@ struct DiaryListView: View {
         }
         .sheet(item: $entryToEdit) { entry in
             EntryEditorView(entry: entry)
+                .environmentObject(theme)
         }
         .showError(viewModel: viewModel)
         .onAppear { viewModel.load() }

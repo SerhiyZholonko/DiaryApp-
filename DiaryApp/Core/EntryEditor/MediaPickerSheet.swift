@@ -8,6 +8,7 @@ struct MediaPickerSheet: View {
     let onImages: ([UIImage]) -> Void
     let onVideos: ([URL]) -> Void
     let onAudio: (URL) -> Void
+    let onTranscription: (String) -> Void
 
     @EnvironmentObject private var theme: AppTheme
     @State private var showCamera = false
@@ -100,9 +101,13 @@ struct MediaPickerSheet: View {
                 onAudio: { url in
                     onAudio(url)
                     isPresented = false
+                },
+                onTranscription: { text in
+                    onTranscription(text)
+                    isPresented = false
                 }
             )
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
             .environmentObject(theme)
         }
     }

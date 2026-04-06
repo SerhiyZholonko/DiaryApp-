@@ -19,7 +19,7 @@ final class AuthViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
               let rootVC = windowScene.windows.first?.rootViewController else { return }
         isLoading = true
-        Task(operation: {
+        Task {
             defer { isLoading = false }
             do {
                 let user = try await authStore.signInWithGoogle(presenting: rootVC)
@@ -27,6 +27,22 @@ final class AuthViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable 
             } catch {
                 self.error = error
             }
-        })
+        }
+    }
+
+    func signInWithApple() {
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                let user = try await authStore.signInWithApple()
+                onSignedIn?(user)
+            } catch {
+                // Code=1001 — користувач сам закрив діалог, не показуємо помилку
+                let nsError = error as NSError
+                guard nsError.code != 1001 else { return }
+                self.error = error
+            }
+        }
     }
 }

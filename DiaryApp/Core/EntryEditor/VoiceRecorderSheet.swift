@@ -6,9 +6,14 @@ import Combine
 struct VoiceRecorderSheet: View {
     @Binding var isPresented: Bool
     let onAudio: (URL) -> Void
+    let onTranscription: (String) -> Void
 
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var recorder = VoiceRecorder()
+
+    private enum SheetState { case idle, recording, done(URL), transcribing }
+    @State private var state: SheetState = .idle
+    @State private var transcriptionError: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -25,7 +30,25 @@ struct VoiceRecorderSheet: View {
 
             Spacer().frame(height: 32)
 
-            // Timer
+            switch state {
+            case .idle, .recording:
+                recordingView
+            case .done(let url):
+                doneView(url: url)
+            case .transcribing:
+                transcribingView
+            }
+
+            Spacer().frame(height: 48)
+        }
+        .background(Color.diaryBackground)
+        .onDisappear { recorder.cancel() }
+    }
+
+    // MARK: - Recording View
+
+    private var recordingView: some View {
+        VStack(spacing: 0) {
             Text(recorder.timeString)
                 .font(.system(size: 52, weight: .thin, design: .monospaced))
                 .foregroundStyle(Color.diaryPrimaryText)
@@ -33,14 +56,12 @@ struct VoiceRecorderSheet: View {
 
             Spacer().frame(height: 28)
 
-            // Waveform
             WaveformBarsView(isRecording: recorder.isRecording)
                 .frame(height: 56)
                 .padding(.horizontal, 32)
 
             Spacer().frame(height: 36)
 
-            // Record / Stop button
             Button(action: handleRecordTap) {
                 ZStack {
                     Circle()
@@ -64,21 +85,130 @@ struct VoiceRecorderSheet: View {
             Text(recorder.isRecording ? "Натисни щоб зупинити" : "Натисни щоб почати запис")
                 .font(.system(size: 13))
                 .foregroundStyle(Color.diarySecondary)
-
-            Spacer().frame(height: 48)
         }
-        .background(Color.diaryBackground)
-        .onDisappear { recorder.cancel() }
     }
+
+    // MARK: - Done View
+
+    private func doneView(url: URL) -> some View {
+        VStack(spacing: 0) {
+            // Duration badge
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(Color(hex: "#4CAF50"))
+                Text("Запис завершено · \(recorder.timeString)")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Color.diaryPrimaryText)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(Color.diaryCard)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            if let err = transcriptionError {
+                Text(err)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color(hex: "#FF4B4B"))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+            }
+
+            Spacer().frame(height: 28)
+
+            // Transcribe button
+            Button(action: { transcribe(url: url) }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "text.bubble.fill")
+                    Text("Вставити текст")
+                        .fontWeight(.semibold)
+                }
+                .font(.system(size: 16))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(theme.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 24)
+
+            Spacer().frame(height: 12)
+
+            // Save audio button
+            Button(action: {
+                onAudio(url)
+                isPresented = false
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "waveform")
+                    Text("Зберегти аудіо")
+                        .fontWeight(.medium)
+                }
+                .font(.system(size: 16))
+                .foregroundStyle(Color.diaryPrimaryText)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(Color.diaryCard)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 24)
+
+            Spacer().frame(height: 12)
+
+            // Re-record link
+            Button(action: {
+                state = .idle
+                recorder.cancel()
+            }) {
+                Text("Записати знову")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.diarySecondary)
+            }
+        }
+    }
+
+    // MARK: - Transcribing View
+
+    private var transcribingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.4)
+                .tint(theme.accent)
+            Text("Розпізнаю текст…")
+                .font(.system(size: 15))
+                .foregroundStyle(Color.diarySecondary)
+        }
+        .frame(minHeight: 160)
+    }
+
+    // MARK: - Actions
 
     private func handleRecordTap() {
         if recorder.isRecording {
             if let url = recorder.stop() {
-                onAudio(url)
-                isPresented = false
+                state = .done(url)
             }
         } else {
+            state = .recording
             recorder.start()
+        }
+    }
+
+    private func transcribe(url: URL) {
+        transcriptionError = nil
+        state = .transcribing
+        Task {
+            do {
+                let text = try await SpeechTranscriber.shared.transcribe(url: url)
+                if text.isEmpty {
+                    throw SpeechTranscriber.TranscriptionError.emptyResult
+                }
+                onTranscription(text)
+                isPresented = false
+            } catch {
+                state = .done(url)
+                transcriptionError = error.localizedDescription
+            }
         }
     }
 }

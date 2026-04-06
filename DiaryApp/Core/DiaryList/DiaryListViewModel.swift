@@ -48,6 +48,7 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
             defer { isLoading = false }
             do {
                 entries = try await diaryStore.fetchEntries()
+                streakStore.recalculate(from: entries.map(\.createdAt))
                 loadTodayMood()
             } catch {
                 self.error = error
