@@ -63,7 +63,7 @@ struct OnboardingView: View {
 
                     Button(action: {
                         if currentPage < pages.count - 1 {
-                            withAnimation { currentPage += 1 }
+                            withAnimation(.spring(response: 0.4)) { currentPage += 1 }
                         } else {
                             onFinish()
                         }
@@ -75,7 +75,9 @@ struct OnboardingView: View {
                             .background(theme.accent)
                             .foregroundStyle(.white)
                             .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .shadow(color: theme.accent.opacity(0.45), radius: 12, x: 0, y: 6)
                     }
+                    .buttonStyle(SpringButtonStyle())
                     .padding(.horizontal, 24)
 
                     Button(action: onFinish) {
@@ -83,6 +85,7 @@ struct OnboardingView: View {
                             .font(.system(size: 14))
                             .foregroundStyle(Color.diarySecondary)
                     }
+                    .buttonStyle(SpringButtonStyle(scale: 0.97))
                 }
                 .padding(.bottom, 40)
             }
@@ -110,8 +113,13 @@ struct OnboardingPageView: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(Color.diarySurface)
+                    .fill(LinearGradient(
+                        colors: [theme.accent.opacity(0.3), theme.accent.opacity(0.08)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                     .frame(width: 96, height: 96)
+                    .shadow(color: theme.accent.opacity(0.25), radius: 16, x: 0, y: 8)
                 Image(systemName: page.icon)
                     .font(.system(size: 44))
                     .foregroundStyle(theme.accent)
@@ -146,6 +154,7 @@ struct OnboardingPageView: View {
                     .padding(.vertical, 12)
                     .background(Color.diaryCard)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
                 }
             }
             .padding(.horizontal, 24)

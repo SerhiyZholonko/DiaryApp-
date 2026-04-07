@@ -3,9 +3,10 @@
 import SwiftUI
 
 struct SearchView: View {
+    let onEdit: (DiaryEntry) -> Void
+
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = SearchViewModel()
-    @State private var entryToEdit: DiaryEntry?
 
     private let filters: [SearchFilter] = [
         .all, .today, .thisWeek,
@@ -21,7 +22,11 @@ struct SearchView: View {
                 HStack(spacing: 10) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(theme.accent.opacity(0.2))
+                            .fill(LinearGradient(
+                                colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
                             .frame(width: 36, height: 36)
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 16))
@@ -93,9 +98,6 @@ struct SearchView: View {
                 }
             }
         }
-        .sheet(item: $entryToEdit) { entry in
-            EntryEditorView(entry: entry)
-        }
         .onAppear { viewModel.load() }
     }
 
@@ -134,12 +136,12 @@ struct SearchView: View {
                         ForEach(viewModel.results) { entry in
                             DiaryEntryCard(
                                 entry: entry,
-                                onEdit: { entryToEdit = entry },
+                                onEdit: { onEdit(entry) },
                                 onDelete: {}
                             )
                             .padding(.horizontal, 20)
                             .padding(.bottom, 12)
-                            .onTapGesture { entryToEdit = entry }
+                            .onTapGesture { onEdit(entry) }
                         }
                         Spacer().frame(height: 90)
                     }
@@ -171,7 +173,7 @@ struct FilterChip: View {
 }
 
 #Preview {
-    SearchView()
+    SearchView(onEdit: { _ in })
         .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

@@ -3,7 +3,6 @@
 import SwiftUI
 
 struct EntryEditorView: View {
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel: EntryEditorViewModel
     @State private var isTextFocused = false
@@ -12,9 +11,12 @@ struct EntryEditorView: View {
     @State private var showMediaPicker = false
     @State private var fullscreenIndex: Int?
 
-    init(entry: DiaryEntry?) {
+    private let dismissAction: () -> Void
+
+    init(entry: DiaryEntry?, onDismiss: @escaping () -> Void) {
         _viewModel = StateObject(wrappedValue: EntryEditorViewModel(entry: entry))
         _showPreview = State(initialValue: entry != nil)
+        self.dismissAction = onDismiss
     }
 
     var body: some View {
@@ -51,14 +53,16 @@ struct EntryEditorView: View {
                     .padding(.top, 16)
                 }
 
-                if isTextFocused && !showPreview {
-                    markdownToolbar
-                }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if isTextFocused && !showPreview {
+                markdownToolbar
             }
         }
         .showError(viewModel: viewModel)
         .onAppear {
-            viewModel.onDismiss = { dismiss() }
+            viewModel.onDismiss = dismissAction
         }
         .sheet(isPresented: $showMediaPicker) {
             MediaPickerSheet(
@@ -91,9 +95,9 @@ struct EntryEditorView: View {
     // MARK: - Nav Bar
     private var navBar: some View {
         HStack {
-            Button("Скасувати") { dismiss() }
+            Button("Скасувати") { dismissAction() }
                 .font(.system(size: 16))
-                .foregroundStyle(Color.diarySecondary)
+                .foregroundStyle(Color.diaryPrimaryText.opacity(0.6))
 
             Spacer()
 
@@ -106,18 +110,30 @@ struct EntryEditorView: View {
             Button(action: viewModel.save) {
                 if viewModel.isSaving {
                     ProgressView().tint(theme.accent)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
                 } else {
                     Text("Зберегти")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(theme.accent)
-                        .fixedSize()
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 7)
+                        .background(theme.accent)
+                        .clipShape(Capsule())
                 }
             }
             .disabled(viewModel.isSaving)
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 14)
+        .padding(.vertical, 12)
+        .padding(.top, safeAreaTop)
         .background(Color.diaryBackground)
+    }
+
+    private var safeAreaTop: CGFloat {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first?.windows.first?.safeAreaInsets.top ?? 0
     }
 
     // MARK: - Date Header
@@ -178,6 +194,7 @@ struct EntryEditorView: View {
             .padding(.vertical, 10)
             .background(isActive ? theme.accent.opacity(0.12) : Color.clear)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .contentShape(RoundedRectangle(cornerRadius: 10))
             .padding(3)
         }
         .buttonStyle(.plain)
@@ -392,6 +409,6 @@ struct EntryEditorView: View {
 }
 
 #Preview {
-    EntryEditorView(entry: nil)
+    EntryEditorView(entry: nil, onDismiss: {})
         .environmentObject(AppTheme())
 }

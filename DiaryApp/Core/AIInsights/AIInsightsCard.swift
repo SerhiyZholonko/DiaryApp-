@@ -98,6 +98,7 @@ struct AIInsightsCard: View {
                             : Color.clear
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .contentShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
             }

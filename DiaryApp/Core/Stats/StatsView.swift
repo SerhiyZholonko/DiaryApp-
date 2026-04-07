@@ -4,27 +4,42 @@ import SwiftUI
 import Charts
 
 struct StatsView: View {
+    let onEdit: (DiaryEntry) -> Void
+
     @EnvironmentObject private var theme: AppTheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var viewModel = StatsViewModel()
+    @State private var selectedTag: String? = nil
+
+    private var isRegular: Bool { sizeClass == .regular }
+    private var chartHeight: CGFloat     { isRegular ? 220 : 140 }
+    private var emojiAxisWidth: CGFloat  { isRegular ? 36 : 24 }
+    private var emojiSize: CGFloat       { isRegular ? 20 : 12 }
+    private var sectionTitleSize: CGFloat { isRegular ? 20 : 16 }
+    private var contentMaxWidth: CGFloat { isRegular ? 900 : .infinity }
 
     var body: some View {
         ZStack {
             Color.diaryBackground.ignoresSafeArea()
 
             ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: isRegular ? 28 : 20) {
                     // Title
                     HStack(spacing: 10) {
                         ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(theme.accent.opacity(0.2))
-                                .frame(width: 36, height: 36)
+                            RoundedRectangle(cornerRadius: isRegular ? 14 : 10)
+                                .fill(LinearGradient(
+                                    colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ))
+                                .frame(width: isRegular ? 48 : 36, height: isRegular ? 48 : 36)
                             Image(systemName: "chart.bar.fill")
-                                .font(.system(size: 16))
+                                .font(.system(size: isRegular ? 22 : 16))
                                 .foregroundStyle(theme.accent)
                         }
                         Text("Статистика")
-                            .font(.system(size: 22, weight: .bold))
+                            .font(.system(size: isRegular ? 30 : 22, weight: .bold))
                             .foregroundStyle(Color.diaryPrimaryText)
                         Spacer()
                     }
@@ -51,11 +66,23 @@ struct StatsView: View {
 
                     Spacer().frame(height: 90)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, isRegular ? 40 : 20)
+                .frame(maxWidth: contentMaxWidth)
+                .frame(maxWidth: .infinity)
             }
         }
         .onAppear { viewModel.load() }
         .onChange(of: viewModel.selectedMonth) { _ in viewModel.computeStats() }
+        .sheet(item: Binding(
+            get: { selectedTag.map { TagItem(tag: $0) } },
+            set: { selectedTag = $0?.tag }
+        )) { item in
+            TagEntriesView(tag: item.tag, onEdit: { entry in
+                selectedTag = nil
+                onEdit(entry)
+            })
+            .environmentObject(theme)
+        }
     }
 
     // MARK: - Month selector
@@ -93,7 +120,7 @@ struct StatsView: View {
     private var moodChart: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Настрій за місяць")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
             ZStack {
@@ -102,19 +129,19 @@ struct StatsView: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Color.diarySecondary)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 140)
+                        .frame(height: chartHeight)
                 } else {
                     // Mood emoji axis
                     HStack(spacing: 0) {
                         VStack(spacing: 0) {
                             ForEach([MoodLevel.excellent, .good, .neutral, .bad, .awful], id: \.rawValue) { mood in
                                 Text(mood.emoji)
-                                    .font(.system(size: 12))
+                                    .font(.system(size: emojiSize))
                                     .frame(maxHeight: .infinity)
                             }
                         }
-                        .frame(width: 24)
-                        .frame(height: 140)
+                        .frame(width: emojiAxisWidth)
+                        .frame(height: chartHeight)
 
                         GeometryReader { geo in
                             let days = daysInSelectedMonth
@@ -140,10 +167,10 @@ struct StatsView: View {
                                 }
                             }
                             .chartYAxis(.hidden)
-                            .frame(width: geo.size.width, height: 140)
+                            .frame(width: geo.size.width, height: chartHeight)
                         }
                         .frame(maxWidth: .infinity)
-                        .frame(height: 140)
+                        .frame(height: chartHeight)
                     }
                     .frame(maxWidth: .infinity)
                 }
@@ -151,6 +178,7 @@ struct StatsView: View {
             .padding(16)
             .background(Color.diaryCard)
             .clipShape(RoundedRectangle(cornerRadius: 16))
+            .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
         }
     }
 
@@ -158,16 +186,42 @@ struct StatsView: View {
     private var activityHeatmap: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Активність (рік)")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HeatmapView(data: viewModel.activityData)
-                    .padding(16)
+            if isRegular {
+                // Mac/iPad: fill available width, no horizontal scroll
+                GeometryReader { geo in
+                    let padding: CGFloat = 32
+                    let available = geo.size.width - padding
+                    let spacing: CGFloat = 4
+                    let cols = 53
+                    let cell = floor((available - CGFloat(cols - 1) * spacing) / CGFloat(cols))
+                    let rows = 7
+                    let totalHeight = cell * CGFloat(rows) + spacing * CGFloat(rows - 1)
+
+                    HeatmapView(data: viewModel.activityData, fixedCellSize: cell, fixedSpacing: spacing)
+                        .padding(padding / 2)
+                        .frame(height: totalHeight + padding)
+                }
+                .frame(height: {
+                    let cell: CGFloat = 18
+                    let spacing: CGFloat = 4
+                    return cell * 7 + spacing * 6 + 32
+                }())
+                .background(Color.diaryCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HeatmapView(data: viewModel.activityData)
+                        .padding(16)
+                }
+                .defaultScrollAnchor(.trailing)
+                .background(Color.diaryCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
             }
-            .defaultScrollAnchor(.trailing)
-            .background(Color.diaryCard)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
     }
 
@@ -175,35 +229,52 @@ struct StatsView: View {
     private var topTagsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Топ теги")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
             if viewModel.topTags.isEmpty {
                 Text("Немає тегів")
-                    .font(.system(size: 14))
+                    .font(.system(size: isRegular ? 16 : 14))
                     .foregroundStyle(Color.diarySecondary)
             } else {
                 let maxCount = viewModel.topTags.first?.count ?? 1
-                VStack(spacing: 12) {
+                VStack(spacing: isRegular ? 16 : 12) {
                     ForEach(viewModel.topTags, id: \.tag) { item in
-                        HStack {
-                            Text("#\(item.tag)")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(Color.diaryPrimaryText)
-                            Spacer()
-                            Text("\(item.count) зап.")
-                                .font(.system(size: 13))
-                                .foregroundStyle(Color.diarySecondary)
+                        Button {
+                            selectedTag = item.tag
+                        } label: {
+                            HStack {
+                                Text("#\(item.tag)")
+                                    .font(.system(size: isRegular ? 17 : 14, weight: .medium))
+                                    .foregroundStyle(Color.diaryPrimaryText)
+                                Spacer()
+                                HStack(spacing: 4) {
+                                    Text("\(item.count) зап.")
+                                        .font(.system(size: isRegular ? 15 : 13))
+                                        .foregroundStyle(Color.diarySecondary)
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: isRegular ? 13 : 11))
+                                        .foregroundStyle(Color.diaryTertiary)
+                                }
+                            }
+                            GeometryReader { geo in
+                                RoundedRectangle(cornerRadius: isRegular ? 5 : 4)
+                                    .fill(LinearGradient(
+                                        colors: [theme.accent, theme.accent.opacity(0.6)],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ))
+                                    .frame(
+                                        width: min(geo.size.width, geo.size.width * CGFloat(item.count) / CGFloat(maxCount)),
+                                        height: isRegular ? 8 : 6
+                                    )
+                            }
+                            .frame(height: isRegular ? 8 : 6)
                         }
-                        GeometryReader { geo in
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(theme.accent)
-                                .frame(width: geo.size.width * CGFloat(item.count) / CGFloat(maxCount), height: 6)
-                        }
-                        .frame(height: 6)
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(16)
+                .padding(isRegular ? 20 : 16)
                 .background(Color.diaryCard)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
             }
@@ -236,30 +307,41 @@ struct StatCard: View {
     let value: String
     let icon: String
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    private var isRegular: Bool { sizeClass == .regular }
+
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: isRegular ? 8 : 4) {
             Text(value)
-                .font(.system(size: 22, weight: .bold))
+                .font(.system(size: isRegular ? 32 : 22, weight: .bold))
                 .foregroundStyle(Color.diaryPrimaryText)
             Text(title)
-                .font(.system(size: 12))
+                .font(.system(size: isRegular ? 15 : 12))
                 .foregroundStyle(Color.diarySecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.vertical, isRegular ? 24 : 16)
         .background(Color.diaryCard)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: isRegular ? 18 : 14))
+        .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
     }
 }
 
 // MARK: - HeatmapView
 struct HeatmapView: View {
     let data: [Date: Int]
+    var fixedCellSize: CGFloat? = nil
+    var fixedSpacing: CGFloat? = nil
 
     @EnvironmentObject private var theme: AppTheme
+    @Environment(\.horizontalSizeClass) private var sizeClass
     private let calendar = Calendar.current
     private let columns = 53
     private let rows = 7
+
+    private var cellSize: CGFloat  { fixedCellSize ?? (sizeClass == .regular ? 16 : 11) }
+    private var cellSpacing: CGFloat { fixedSpacing ?? (sizeClass == .regular ? 4 : 3) }
+    private var cellRadius: CGFloat  { sizeClass == .regular ? 3 : 2 }
 
     private var weeks: [[Date?]] {
         let today = calendar.startOfDay(for: .now)
@@ -286,19 +368,22 @@ struct HeatmapView: View {
         // Обчислюємо один раз — уникаємо 372 повторних викликів Calendar
         let computedWeeks = weeks
         let accent = theme.accent
+        let size = cellSize
+        let spacing = cellSpacing
+        let radius = cellRadius
 
-        HStack(alignment: .top, spacing: 3) {
+        HStack(alignment: .top, spacing: spacing) {
             ForEach(computedWeeks.indices, id: \.self) { weekIdx in
                 let week = computedWeeks[weekIdx]
-                VStack(spacing: 3) {
+                VStack(spacing: spacing) {
                     ForEach(0..<7, id: \.self) { dayIdx in
                         if dayIdx < week.count, let date = week[dayIdx] {
                             let count = data[date] ?? 0
-                            RoundedRectangle(cornerRadius: 2)
+                            RoundedRectangle(cornerRadius: radius)
                                 .fill(heatColor(count, accent: accent))
-                                .frame(width: 11, height: 11)
+                                .frame(width: size, height: size)
                         } else {
-                            Color.clear.frame(width: 11, height: 11)
+                            Color.clear.frame(width: size, height: size)
                         }
                     }
                 }
@@ -316,8 +401,14 @@ struct HeatmapView: View {
     }
 }
 
+// MARK: - Tag Item (Identifiable wrapper for sheet)
+private struct TagItem: Identifiable {
+    let tag: String
+    var id: String { tag }
+}
+
 #Preview {
-    StatsView()
+    StatsView(onEdit: { _ in })
         .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

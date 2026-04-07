@@ -18,7 +18,11 @@ struct SettingsView: View {
                     HStack(spacing: 10) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10)
-                                .fill(theme.accent.opacity(0.2))
+                                .fill(LinearGradient(
+                                    colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ))
                                 .frame(width: 36, height: 36)
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 16))
@@ -178,17 +182,26 @@ struct SettingsView: View {
                                 Spacer()
                                 HStack(spacing: 8) {
                                     ForEach(AppTheme.palette.indices, id: \.self) { idx in
+                                        let isSelected = theme.accentIdx == idx
                                         Circle()
                                             .fill(AppTheme.palette[idx])
-                                            .frame(width: 24, height: 24)
+                                            .frame(width: isSelected ? 28 : 24,
+                                                   height: isSelected ? 28 : 24)
+                                            .shadow(color: AppTheme.palette[idx].opacity(isSelected ? 0.55 : 0),
+                                                    radius: 6, x: 0, y: 2)
                                             .overlay {
-                                                if theme.accentIdx == idx {
+                                                if isSelected {
                                                     Image(systemName: "checkmark")
                                                         .font(.system(size: 10, weight: .bold))
                                                         .foregroundStyle(.white)
                                                 }
                                             }
-                                            .onTapGesture { theme.accentIdx = idx }
+                                            .animation(.spring(response: 0.3, dampingFraction: 0.65), value: isSelected)
+                                            .onTapGesture {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.65)) {
+                                                    theme.accentIdx = idx
+                                                }
+                                            }
                                     }
                                 }
                             }
@@ -235,8 +248,13 @@ struct SettingsView: View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .fill(theme.accent.opacity(0.3))
+                    .fill(LinearGradient(
+                        colors: [theme.accent.opacity(0.45), theme.accent.opacity(0.15)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ))
                     .frame(width: 52, height: 52)
+                    .shadow(color: theme.accent.opacity(0.3), radius: 8, x: 0, y: 4)
                 Text(initials)
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(theme.accentLight)
@@ -254,6 +272,7 @@ struct SettingsView: View {
         .padding(16)
         .background(Color.diaryCard)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 4)
     }
 
     private var initials: String {
@@ -275,6 +294,7 @@ struct SettingsView: View {
             }
             .background(Color.diaryCard)
             .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: Color.black.opacity(0.07), radius: 10, x: 0, y: 3)
         }
     }
 

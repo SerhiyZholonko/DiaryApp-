@@ -23,8 +23,6 @@ struct DiaryEntryCard: View {
         return formatter.string(from: entry.createdAt)
     }
 
-    @State private var fullscreenIndex: Int?
-
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -41,7 +39,7 @@ struct DiaryEntryCard: View {
                 .font(.system(size: 15))
                 .foregroundStyle(Color.diaryPrimaryText)
                 .lineLimit(3)
-                .fixedSize(horizontal: false, vertical: true)
+                .truncationMode(.tail)
 
             // Media preview thumbnails
             if !entry.attachments.isEmpty {
@@ -65,8 +63,18 @@ struct DiaryEntryCard: View {
             }
         }
         .padding(16)
-        .background(Color.diaryCard)
+        .background(
+            LinearGradient(
+                stops: [
+                    .init(color: theme.accent.opacity(0.07), location: 0),
+                    .init(color: Color.diaryCard, location: 0.45)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: Color.black.opacity(0.09), radius: 12, x: 0, y: 4)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button(role: .destructive) {
                 showDeleteConfirm = true
@@ -105,15 +113,16 @@ struct DiaryEntryCard: View {
 
     private var mediaPreview: some View {
         HStack(spacing: 6) {
-            ForEach(Array(entry.attachments.prefix(4).enumerated()), id: \.element.id) { idx, att in
+            ForEach(Array(entry.attachments.prefix(4).enumerated()), id: \.element.id) { _, att in
                 MediaThumbnailCell(
                     attachment: att,
                     entryId: entry.id,
                     showRemove: false,
                     size: 64,
                     onRemove: {},
-                    onTap: { fullscreenIndex = idx }
+                    onTap: {}
                 )
+                .allowsHitTesting(false)
             }
 
             if entry.attachments.count > 4 {
@@ -125,21 +134,6 @@ struct DiaryEntryCard: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundStyle(Color.diarySecondary)
                 }
-            }
-        }
-        .fullScreenCover(isPresented: Binding(
-            get: { fullscreenIndex != nil },
-            set: { if !$0 { fullscreenIndex = nil } }
-        )) {
-            if let idx = fullscreenIndex {
-                MediaFullscreenView(
-                    attachments: entry.attachments,
-                    entryId: entry.id,
-                    selectedIndex: Binding(
-                        get: { fullscreenIndex ?? idx },
-                        set: { fullscreenIndex = $0 }
-                    )
-                )
             }
         }
     }

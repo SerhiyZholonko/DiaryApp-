@@ -4,11 +4,13 @@ import SwiftUI
 
 struct DiaryListView: View {
     let onNewEntry: () -> Void
+    let onEdit: (DiaryEntry) -> Void
+    let namespace: Namespace.ID
 
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = DiaryListViewModel()
-    @State private var entryToEdit: DiaryEntry?
     @AppStorage("ai_insights_enabled") private var aiInsightsEnabled = true
+    @State private var appeared = false
 
     var body: some View {
         ZStack {
@@ -96,12 +98,17 @@ struct DiaryListView: View {
                             ForEach(group.entries) { entry in
                                 DiaryEntryCard(
                                     entry: entry,
-                                    onEdit: { entryToEdit = entry },
+                                    onEdit: { onEdit(entry) },
                                     onDelete: { viewModel.delete(entry) }
                                 )
+                                .matchedGeometryEffect(id: entry.id, in: namespace)
                                 .padding(.horizontal, 20)
                                 .padding(.bottom, 12)
-                                .onTapGesture { entryToEdit = entry }
+                                .onTapGesture { onEdit(entry) }
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                                    removal: .opacity.combined(with: .scale(scale: 0.95))
+                                ))
                             }
                         }
                     }
@@ -110,12 +117,12 @@ struct DiaryListView: View {
                 }
             }
         }
-        .sheet(item: $entryToEdit) { entry in
-            EntryEditorView(entry: entry)
-                .environmentObject(theme)
-        }
         .showError(viewModel: viewModel)
-        .onAppear { viewModel.load() }
+        .onAppear {
+            viewModel.load()
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) { appeared = true }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: viewModel.entries.count)
     }
 
     // MARK: - Header
@@ -124,7 +131,11 @@ struct DiaryListView: View {
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(theme.accent.opacity(0.2))
+                        .fill(LinearGradient(
+                            colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ))
                         .frame(width: 36, height: 36)
                     Image(systemName: "doc.text.fill")
                         .font(.system(size: 16))
@@ -180,7 +191,13 @@ struct StreakBadge: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
-        .background(Color.diaryCard)
+        .background(
+            LinearGradient(
+                colors: [Color(hex: "#FF6B35").opacity(0.18), Color.diaryCard],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+        )
         .clipShape(Capsule())
     }
 
@@ -195,7 +212,8 @@ struct StreakBadge: View {
 }
 
 #Preview {
-    DiaryListView(onNewEntry: {})
+    @Namespace var ns
+    return DiaryListView(onNewEntry: {}, onEdit: { _ in }, namespace: ns)
         .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

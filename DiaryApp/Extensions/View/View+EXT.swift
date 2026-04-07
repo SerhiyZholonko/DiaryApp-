@@ -1,6 +1,17 @@
 // MARK: - General View Extensions
 import SwiftUI
 
+// MARK: - Spring Button Style (press scale + opacity feedback)
+struct SpringButtonStyle: ButtonStyle {
+    var scale: CGFloat = 0.96
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? scale : 1.0)
+            .opacity(configuration.isPressed ? 0.82 : 1.0)
+            .animation(.spring(response: 0.25, dampingFraction: 0.6), value: configuration.isPressed)
+    }
+}
+
 extension View {
     /// Застосовує модифікатор тільки якщо condition true
     @ViewBuilder

@@ -7,6 +7,7 @@ struct AuthView: View {
 
     @EnvironmentObject private var theme: AppTheme
     @StateObject private var viewModel = AuthViewModel()
+    @State private var appeared = false
 
     var body: some View {
         ZStack {
@@ -40,6 +41,7 @@ struct AuthView: View {
                                 )
                             )
                             .frame(width: 80, height: 80)
+                            .shadow(color: theme.accent.opacity(0.5), radius: 24, x: 0, y: 10)
                         Image(systemName: "doc.text.fill")
                             .font(.system(size: 36))
                             .foregroundStyle(.white)
@@ -53,6 +55,9 @@ struct AuthView: View {
                         .font(.system(size: 15))
                         .foregroundStyle(Color.diarySecondary)
                 }
+                .offset(y: appeared ? 0 : 28)
+                .opacity(appeared ? 1 : 0)
+                .animation(.spring(response: 0.65, dampingFraction: 0.8).delay(0.05), value: appeared)
 
                 Spacer()
 
@@ -82,7 +87,9 @@ struct AuthView: View {
                         .frame(height: 54)
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .shadow(color: Color.white.opacity(0.15), radius: 12, x: 0, y: 4)
                     }
+                    .buttonStyle(SpringButtonStyle())
                     .disabled(viewModel.isLoading)
                     .overlay {
                         if viewModel.isLoading {
@@ -112,7 +119,9 @@ struct AuthView: View {
                         .frame(height: 54)
                         .background(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .shadow(color: Color.white.opacity(0.15), radius: 12, x: 0, y: 4)
                     }
+                    .buttonStyle(SpringButtonStyle())
                     .disabled(viewModel.isLoading)
 
                     Text("Продовжуючи, ти погоджуєшся з Умовами та Політикою конфіденційності")
@@ -123,7 +132,11 @@ struct AuthView: View {
                 .padding(24)
                 .background(Color.diaryCard)
                 .clipShape(RoundedRectangle(cornerRadius: 24))
+                .shadow(color: Color.black.opacity(0.3), radius: 32, x: 0, y: 16)
                 .padding(.horizontal, 20)
+                .offset(y: appeared ? 0 : 40)
+                .opacity(appeared ? 1 : 0)
+                .animation(.spring(response: 0.65, dampingFraction: 0.82).delay(0.15), value: appeared)
 
                 Spacer().frame(height: 40)
             }
@@ -132,6 +145,7 @@ struct AuthView: View {
         .showError(viewModel: viewModel)
         .onAppear {
             viewModel.onSignedIn = onSignedIn
+            appeared = true
         }
     }
 }

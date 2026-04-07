@@ -32,6 +32,11 @@ enum MarkdownRenderer {
     // MARK: - Private
 
     private static func renderLine(_ line: String) -> AttributedString {
+        if line.hasPrefix("### ") {
+            var a = inlines(String(line.dropFirst(4)))
+            a.font = .system(size: 16, weight: .semibold)
+            return a
+        }
         if line.hasPrefix("## ") {
             var a = inlines(String(line.dropFirst(3)))
             a.font = .system(size: 18, weight: .bold)
@@ -56,13 +61,19 @@ enum MarkdownRenderer {
     }
 
     /// Компактний рядок для карток — прибирає синтаксис заголовків/списків,
-    /// але зберігає жирний/курсив.
+    /// але зберігає жирний/курсив. Заголовки рендеряться напівжирним.
     private static func renderLineCompact(_ line: String) -> AttributedString {
         let stripped: String
-        if line.hasPrefix("## ") {
+        var isHeading = false
+        if line.hasPrefix("### ") {
+            stripped = String(line.dropFirst(4))
+            isHeading = true
+        } else if line.hasPrefix("## ") {
             stripped = String(line.dropFirst(3))
+            isHeading = true
         } else if line.hasPrefix("# ") {
             stripped = String(line.dropFirst(2))
+            isHeading = true
         } else if line.hasPrefix("- ") || line.hasPrefix("* ") {
             stripped = "• " + String(line.dropFirst(2))
         } else if line.hasPrefix("> ") {
@@ -70,13 +81,17 @@ enum MarkdownRenderer {
         } else {
             stripped = line
         }
-        return inlines(stripped)
+        var result = inlines(stripped)
+        if isHeading {
+            result.font = .system(size: 15, weight: .semibold)
+        }
+        return result
     }
 
     private static func inlines(_ text: String) -> AttributedString {
         (try? AttributedString(
             markdown: text,
-            options: .init(interpretedSyntax: .full)
+            options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
         )) ?? AttributedString(text)
     }
 }

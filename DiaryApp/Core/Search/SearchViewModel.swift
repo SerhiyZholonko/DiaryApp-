@@ -56,6 +56,8 @@ final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayabl
         }
         case .mood(let mood):
             filtered = filtered.filter { $0.mood == mood }
+        case .tag(let tag):
+            filtered = filtered.filter { $0.tags.contains(tag) }
         }
 
         results = filtered
@@ -63,7 +65,7 @@ final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayabl
 }
 
 enum SearchFilter: Equatable {
-    case all, today, thisWeek, mood(MoodLevel)
+    case all, today, thisWeek, mood(MoodLevel), tag(String)
 
     var label: String {
         switch self {
@@ -71,6 +73,7 @@ enum SearchFilter: Equatable {
         case .today:        return "Сьогодні"
         case .thisWeek:     return "Цей тиждень"
         case .mood(let m):  return m.emoji
+        case .tag(let t):   return "#\(t)"
         }
     }
 }
