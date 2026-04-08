@@ -29,7 +29,7 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
     // Записи, згруповані за місяць
     var groupedEntries: [(key: String, entries: [DiaryEntry])] {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "uk_UA")
+        formatter.locale = LanguageManager.shared.locale
         formatter.dateFormat = "LLLL yyyy"
 
         let grouped = Dictionary(grouping: entries) { entry in
@@ -50,6 +50,7 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
                 entries = try await diaryStore.fetchEntries()
                 streakStore.recalculate(from: entries.map(\.createdAt))
                 loadTodayMood()
+                updateWidget()
             } catch {
                 self.error = error
             }
@@ -69,5 +70,28 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
 
     private func loadTodayMood() {
         todayMood = entries.first?.mood
+    }
+
+    // MARK: - Widget Data
+
+    private func updateWidget() {
+        let ud = UserDefaults(suiteName: "group.com.diary.diaryapp")
+        ud?.set(streakStore.currentStreak, forKey: "widget_streak")
+        if let entry = entries.first {
+            ud?.set(entry.preview,      forKey: "widget_preview")
+            ud?.set(entry.mood?.emoji,  forKey: "widget_mood_emoji")
+            ud?.set(entry.mood?.color,  forKey: "widget_mood_color")
+            ud?.set(entry.createdAt,    forKey: "widget_entry_date")
+            ud?.set(true,               forKey: "widget_has_entry")
+        } else {
+            ud?.removeObject(forKey: "widget_preview")
+            ud?.removeObject(forKey: "widget_mood_emoji")
+            ud?.removeObject(forKey: "widget_mood_color")
+            ud?.removeObject(forKey: "widget_entry_date")
+            ud?.set(false,              forKey: "widget_has_entry")
+        }
+        // WidgetKit reload — виконується лише якщо widget target підключений
+        // Додай `import WidgetKit` і розкоментуй після налаштування Widget Extension:
+        // WidgetCenter.shared.reloadAllTimelines()
     }
 }

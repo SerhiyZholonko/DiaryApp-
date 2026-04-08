@@ -12,7 +12,9 @@ enum MoodLevel: Int, Codable, CaseIterable, Identifiable {
     }
 
     var label: String {
-        ["Жахливо", "Погано", "Нейтрально", "Добре", "Чудово"][rawValue - 1]
+        let en = ["Awful", "Bad", "Neutral", "Good", "Excellent"]
+        let uk = ["Жахливо", "Погано", "Нейтрально", "Добре", "Чудово"]
+        return LanguageManager.shared.l(en[rawValue - 1], uk[rawValue - 1])
     }
 
     var color: String {

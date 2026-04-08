@@ -6,6 +6,7 @@ struct SearchView: View {
     let onEdit: (DiaryEntry) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = SearchViewModel()
 
     private let filters: [SearchFilter] = [
@@ -32,7 +33,7 @@ struct SearchView: View {
                             .font(.system(size: 16))
                             .foregroundStyle(theme.accent)
                     }
-                    Text("Пошук")
+                    Text(lang.l("Search", "Пошук"))
                         .font(.system(size: 22, weight: .bold))
                         .foregroundStyle(Color.diaryPrimaryText)
                     Spacer()
@@ -45,7 +46,7 @@ struct SearchView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
                         .foregroundStyle(Color.diarySecondary)
-                    TextField("Пошук у записах...", text: $viewModel.query)
+                    TextField(lang.l("Search entries...", "Пошук записів..."), text: $viewModel.query)
                         .font(.system(size: 16))
                         .foregroundStyle(Color.diaryPrimaryText)
                         .tint(theme.accent)
@@ -78,7 +79,7 @@ struct SearchView: View {
                     if !allTags.isEmpty {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
-                                Text("Теги:")
+                                Text(lang.l("Tags:", "Теги:"))
                                     .font(.system(size: 13))
                                     .foregroundStyle(Color.diarySecondary)
                                 ForEach(allTags, id: \.self) { tag in
@@ -107,7 +108,7 @@ struct SearchView: View {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 40))
                 .foregroundStyle(Color.diarySecondary)
-            Text("Введи запит для пошуку")
+            Text(lang.l("Enter a query to search", "Введи запит для пошуку"))
                 .font(.system(size: 16))
                 .foregroundStyle(Color.diarySecondary)
             Spacer()
@@ -119,7 +120,7 @@ struct SearchView: View {
             if viewModel.results.isEmpty {
                 VStack(spacing: 12) {
                     Spacer()
-                    Text("Нічого не знайдено")
+                    Text(lang.l("Nothing found", "Нічого не знайдено"))
                         .font(.system(size: 16))
                         .foregroundStyle(Color.diarySecondary)
                     Spacer()
@@ -127,7 +128,7 @@ struct SearchView: View {
             } else {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 0) {
-                        Text("Результати (\(viewModel.results.count))")
+                        Text(lang.l("Results (\(viewModel.results.count))", "Результати (\(viewModel.results.count))"))
                             .font(.system(size: 13))
                             .foregroundStyle(Color.diarySecondary)
                             .padding(.horizontal, 20)

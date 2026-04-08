@@ -12,7 +12,7 @@ final class SpeechTranscriber {
     func transcribe(url: URL) async throws -> String {
         try await requestAuthorization()
 
-        let preferredLocale = Locale(identifier: "uk-UA")
+        let preferredLocale = Locale.current
         let recognizer: SFSpeechRecognizer? =
             SFSpeechRecognizer(locale: preferredLocale)?.isAvailable == true
                 ? SFSpeechRecognizer(locale: preferredLocale)
@@ -69,11 +69,11 @@ final class SpeechTranscriber {
         var errorDescription: String? {
             switch self {
             case .unavailable:
-                return "Розпізнавання мови недоступне на цьому пристрої"
+                return "Speech recognition is unavailable on this device"
             case .permissionDenied:
-                return "Немає дозволу на розпізнавання мови. Увімкніть у Налаштуваннях → Конфіденційність → Розпізнавання мовлення."
+                return "No speech recognition permission. Enable it in Settings → Privacy → Speech Recognition."
             case .emptyResult:
-                return "Не вдалося розпізнати текст у записі"
+                return "Could not recognize text in the recording"
             }
         }
     }

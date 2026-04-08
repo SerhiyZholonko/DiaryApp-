@@ -7,18 +7,19 @@ struct DiaryEntryCard: View {
     let onDelete: () -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @State private var showDeleteConfirm = false
 
     private var timeString: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "uk_UA")
+        formatter.locale = lang.locale
         let calendar = Calendar.current
         if calendar.isDateInToday(entry.createdAt) {
-            formatter.dateFormat = "'Сьогодні,' HH:mm"
+            formatter.dateFormat = lang.l("'Today,' h:mm a", "'Сьогодні,' HH:mm")
         } else if calendar.isDateInYesterday(entry.createdAt) {
-            formatter.dateFormat = "'Вчора,' HH:mm"
+            formatter.dateFormat = lang.l("'Yesterday,' h:mm a", "'Вчора,' HH:mm")
         } else {
-            formatter.dateFormat = "d MMMM, HH:mm"
+            formatter.dateFormat = lang.l("MMM d, h:mm a", "d MMM, HH:mm")
         }
         return formatter.string(from: entry.createdAt)
     }
@@ -79,33 +80,33 @@ struct DiaryEntryCard: View {
             Button(role: .destructive) {
                 showDeleteConfirm = true
             } label: {
-                Label("Видалити", systemImage: "trash")
+                Label(lang.l("Delete", "Видалити"), systemImage: "trash")
             }
             Button(action: onEdit) {
-                Label("Редагувати", systemImage: "pencil")
+                Label(lang.l("Edit", "Редагувати"), systemImage: "pencil")
             }
             .tint(theme.accent)
         }
         .contextMenu {
             Button(action: onEdit) {
-                Label("Редагувати", systemImage: "pencil")
+                Label(lang.l("Edit", "Редагувати"), systemImage: "pencil")
             }
             Divider()
             Button(role: .destructive) {
                 showDeleteConfirm = true
             } label: {
-                Label("Видалити", systemImage: "trash")
+                Label(lang.l("Delete", "Видалити"), systemImage: "trash")
             }
         }
         .confirmationDialog(
-            "Видалити запис?",
+            lang.l("Delete entry?", "Видалити запис?"),
             isPresented: $showDeleteConfirm,
             titleVisibility: .visible
         ) {
-            Button("Видалити", role: .destructive, action: onDelete)
-            Button("Скасувати", role: .cancel) {}
+            Button(lang.l("Delete", "Видалити"), role: .destructive, action: onDelete)
+            Button(lang.l("Cancel", "Скасувати"), role: .cancel) {}
         } message: {
-            Text("Цю дію неможливо скасувати")
+            Text(lang.l("This action cannot be undone", "Цю дію не можна скасувати"))
         }
     }
 
@@ -139,12 +140,7 @@ struct DiaryEntryCard: View {
     }
 
     private func wordLabel(_ count: Int) -> String {
-        let mod10 = count % 10
-        let mod100 = count % 100
-        if mod100 >= 11 && mod100 <= 14 { return "слів" }
-        if mod10 == 1 { return "слово" }
-        if mod10 >= 2 && mod10 <= 4 { return "слова" }
-        return "слів"
+        lang.l(count == 1 ? "word" : "words", count == 1 ? "слово" : "слів")
     }
 }
 

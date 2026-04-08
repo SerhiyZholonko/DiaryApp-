@@ -21,8 +21,10 @@ final class NotificationStore {
         center.removePendingNotificationRequests(withIdentifiers: [notificationID])
 
         let content = UNMutableNotificationContent()
-        content.title = "Час записати день 📖"
-        content.body  = "Як пройшов твій день? Зафіксуй думки у щоденнику."
+        let L = LanguageManager.shared.l
+        content.title = L("Time to write your day 📖", "Час записати свій день 📖")
+        content.body  = L("How was your day? Write your thoughts in the diary.",
+                          "Як пройшов твій день? Запиши свої думки у щоденнику.")
         content.sound = .default
 
         var components        = DateComponents()

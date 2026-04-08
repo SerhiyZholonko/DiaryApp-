@@ -7,33 +7,33 @@ final class MockDiaryStore: DiaryStoreProtocol {
     private var entries: [DiaryEntry] = [
         DiaryEntry(
             id: "1",
-            text: "Сьогодні був **продуктивний день**. Закінчив роботу над архітектурою проєкту. Відчуваю задоволення від зробленого.",
+            text: "Today was a **productive day**. Finished working on the project architecture. Feeling satisfied with what I've accomplished.",
             mood: .good,
-            tags: ["робота", "код"],
+            tags: ["work", "code"],
             createdAt: Calendar.current.date(byAdding: .hour, value: -2, to: .now)!,
             updatedAt: .now
         ),
         DiaryEntry(
             id: "2",
-            text: "Думав про майбутнє. Чи правильний шлях я обрав? Треба більше аналізувати свої цілі та рухатись вперед.",
+            text: "Thinking about the future. Did I choose the right path? Need to analyze my goals more and keep moving forward.",
             mood: .neutral,
-            tags: ["роздуми"],
+            tags: ["reflections"],
             createdAt: Calendar.current.date(byAdding: .day, value: -1, to: .now)!,
             updatedAt: .now
         ),
         DiaryEntry(
             id: "3",
-            text: "Ранкова пробіжка в парку. Погода чудова, настрій піднявся. Треба робити це регулярніше.",
+            text: "Morning run in the park. The weather was great, mood lifted. Should do this more regularly.",
             mood: .excellent,
-            tags: ["спорт", "природа"],
+            tags: ["sports", "nature"],
             createdAt: Calendar.current.date(byAdding: .day, value: -4, to: .now)!,
             updatedAt: .now
         ),
         DiaryEntry(
             id: "4",
-            text: "Не дуже продуктивно сьогодні. Відволікався на соцмережі. Потрібно краще фокусуватись.",
+            text: "Not very productive today. Got distracted by social media. Need to focus better.",
             mood: .bad,
-            tags: ["саморефлексія"],
+            tags: ["self-reflection"],
             createdAt: Calendar.current.date(byAdding: .day, value: -7, to: .now)!,
             updatedAt: .now
         )

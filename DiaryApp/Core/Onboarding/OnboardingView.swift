@@ -6,30 +6,39 @@ struct OnboardingView: View {
     let onFinish: () -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @State private var currentPage = 0
 
-    private let pages: [OnboardingPage] = [
-        OnboardingPage(
-            icon: "book.closed.fill",
-            title: "Твій особистий\nщоденник",
-            subtitle: "Записуй думки, відслідковуй настрій і відкривай паттерни у своєму житті",
-            features: [
-                ("lock.fill",        "Захист Face ID — тільки для тебе"),
-                ("chart.bar.fill",   "Аналітика настрою та активності"),
-                ("sparkles",         "AI-підказки для натхнення")
-            ]
-        ),
-        OnboardingPage(
-            icon: "face.smiling",
-            title: "Відстежуй\nсвій настрій",
-            subtitle: "Щодня фіксуй емоції та бач, як змінюється твій стан протягом тижнів і місяців",
-            features: [
-                ("calendar",         "Щоденний mood check-in"),
-                ("flame.fill",       "Streaks тримають мотивацію"),
-                ("bell.fill",        "Нагадування у зручний час")
-            ]
-        )
-    ]
+    private var pages: [OnboardingPage] {
+        [
+            OnboardingPage(
+                icon: "book.closed.fill",
+                title: lang.l("Your personal\ndiary", "Твій особистий\nщоденник"),
+                subtitle: lang.l(
+                    "Write your thoughts, track your mood and discover patterns in your life",
+                    "Записуй думки, відстежуй настрій і відкривай закономірності у своєму житті"
+                ),
+                features: [
+                    ("lock.fill",      lang.l("Face ID protection — just for you", "Face ID захист — тільки для тебе")),
+                    ("chart.bar.fill", lang.l("Mood and activity analytics", "Аналітика настрою й активності")),
+                    ("sparkles",       lang.l("AI tips for inspiration", "AI підказки для натхнення"))
+                ]
+            ),
+            OnboardingPage(
+                icon: "face.smiling",
+                title: lang.l("Track\nyour mood", "Відстежуй\nсвій настрій"),
+                subtitle: lang.l(
+                    "Record emotions daily and see how your state changes over weeks and months",
+                    "Записуй емоції щодня і дивись як твій стан змінюється протягом тижнів і місяців"
+                ),
+                features: [
+                    ("calendar",    lang.l("Daily mood check-in", "Щоденна перевірка настрою")),
+                    ("flame.fill",  lang.l("Streaks keep you motivated", "Серії підтримують мотивацію")),
+                    ("bell.fill",   lang.l("Reminders at a convenient time", "Нагадування в зручний час"))
+                ]
+            )
+        ]
+    }
 
     var body: some View {
         ZStack {
@@ -68,7 +77,7 @@ struct OnboardingView: View {
                             onFinish()
                         }
                     }) {
-                        Text(currentPage < pages.count - 1 ? "Далі" : "Почати ✨")
+                        Text(currentPage < pages.count - 1 ? lang.l("Next", "Далі") : lang.l("Get Started ✨", "Почати ✨"))
                             .font(.system(size: 17, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .frame(height: 54)
@@ -81,7 +90,7 @@ struct OnboardingView: View {
                     .padding(.horizontal, 24)
 
                     Button(action: onFinish) {
-                        Text("Вже є акаунт? Увійти")
+                        Text(lang.l("Already have an account? Sign In", "Вже є акаунт? Увійти"))
                             .font(.system(size: 14))
                             .foregroundStyle(Color.diarySecondary)
                     }

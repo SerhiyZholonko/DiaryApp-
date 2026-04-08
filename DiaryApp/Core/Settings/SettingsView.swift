@@ -6,6 +6,7 @@ struct SettingsView: View {
     let onSignOut: () -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = SettingsViewModel()
 
     var body: some View {
@@ -28,7 +29,7 @@ struct SettingsView: View {
                                 .font(.system(size: 16))
                                 .foregroundStyle(theme.accent)
                         }
-                        Text("Налаштування")
+                        Text(lang.l("Settings", "Налаштування"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(Color.diaryPrimaryText)
                         Spacer()
@@ -37,7 +38,7 @@ struct SettingsView: View {
                     profileCard
 
                     // Security section
-                    section(title: "БЕЗПЕКА") {
+                    section(title: lang.l("SECURITY", "БЕЗПЕКА")) {
                         settingsRow(icon: "lock.fill", iconColor: .yellow) {
                             Toggle("Face ID / Touch ID", isOn: Binding(
                                 get: { viewModel.faceIDEnabled },
@@ -52,7 +53,7 @@ struct SettingsView: View {
 
                         settingsRow(icon: "clock.fill", iconColor: Color.diarySecondary) {
                             HStack {
-                                Text("Автоблокування")
+                                Text(lang.l("Auto Lock", "Автоблокування"))
                                     .font(.system(size: 16))
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
@@ -77,14 +78,14 @@ struct SettingsView: View {
                     }
 
                     // Reminders section
-                    section(title: "НАГАДУВАННЯ") {
+                    section(title: lang.l("REMINDERS", "НАГАДУВАННЯ")) {
                         settingsRow(icon: "bell.fill", iconColor: theme.accent) {
                             Toggle(isOn: Binding(
                                 get: { viewModel.reminderEnabled },
                                 set: { _ in viewModel.toggleReminder() }
                             )) {
                                 HStack {
-                                    Text("Щоденне нагадування")
+                                    Text(lang.l("Daily Reminder", "Щоденне нагадування"))
                                         .font(.system(size: 16))
                                         .foregroundStyle(Color.diaryPrimaryText)
                                     Spacer()
@@ -102,7 +103,7 @@ struct SettingsView: View {
                             Divider().background(Color.diaryDivider).padding(.leading, 52)
                             settingsRow(icon: "clock.fill", iconColor: theme.accent) {
                                 HStack {
-                                    Text("Час нагадування")
+                                    Text(lang.l("Reminder Time", "Час нагадування"))
                                         .font(.system(size: 16))
                                         .foregroundStyle(Color.diaryPrimaryText)
                                     Spacer()
@@ -125,7 +126,7 @@ struct SettingsView: View {
 
                         settingsRow(icon: "flame.fill", iconColor: Color(hex: "#FF6B35")) {
                             HStack {
-                                Text("Ціль серії")
+                                Text(lang.l("Streak Goal", "Ціль серії"))
                                     .font(.system(size: 16))
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
@@ -134,7 +135,7 @@ struct SettingsView: View {
                                         Image(systemName: "minus.circle")
                                             .foregroundStyle(Color.diarySecondary)
                                     }
-                                    Text("\(viewModel.streakGoal) днів")
+                                    Text("\(viewModel.streakGoal) \(lang.l(viewModel.streakGoal == 1 ? "day" : "days", viewModel.streakGoal == 1 ? "день" : "днів"))")
                                         .font(.system(size: 14))
                                         .foregroundStyle(theme.accentLight)
                                         .frame(minWidth: 60)
@@ -148,20 +149,20 @@ struct SettingsView: View {
                     }
 
                     // Appearance section
-                    section(title: "ЗОВНІШНІЙ ВИГЛЯД") {
+                    section(title: lang.l("APPEARANCE", "ВИГЛЯД")) {
                         settingsRow(icon: "moon.fill", iconColor: Color(hex: "#9B85FF")) {
                             HStack {
-                                Text("Темна тема")
+                                Text(lang.l("Dark Theme", "Темна тема"))
                                     .font(.system(size: 16))
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
                                 Menu {
-                                    Button("Системна") { viewModel.appearanceMode = 0 }
-                                    Button("Темна")    { viewModel.appearanceMode = 1 }
-                                    Button("Світла")   { viewModel.appearanceMode = 2 }
+                                    Button(lang.l("System", "Системна")) { viewModel.appearanceMode = 0 }
+                                    Button(lang.l("Dark", "Темна"))       { viewModel.appearanceMode = 1 }
+                                    Button(lang.l("Light", "Світла"))     { viewModel.appearanceMode = 2 }
                                 } label: {
                                     HStack(spacing: 4) {
-                                        Text(["Системна", "Темна", "Світла"][viewModel.appearanceMode])
+                                        Text([lang.l("System", "Системна"), lang.l("Dark", "Темна"), lang.l("Light", "Світла")][viewModel.appearanceMode])
                                             .font(.system(size: 14))
                                             .foregroundStyle(theme.accentLight)
                                         Image(systemName: "chevron.right")
@@ -176,7 +177,7 @@ struct SettingsView: View {
 
                         settingsRow(icon: "paintpalette.fill", iconColor: Color(hex: "#FF8C42")) {
                             HStack {
-                                Text("Акцентний колір")
+                                Text(lang.l("Accent Color", "Акцентний колір"))
                                     .font(.system(size: 16))
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
@@ -208,14 +209,42 @@ struct SettingsView: View {
                         }
                     }
 
+                    // Language section
+                    section(title: lang.l("LANGUAGE", "МОВА")) {
+                        settingsRow(icon: "globe", iconColor: Color(hex: "#4A90D9")) {
+                            HStack {
+                                Text(lang.l("Language", "Мова"))
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(Color.diaryPrimaryText)
+                                Spacer()
+                                Menu {
+                                    ForEach(AppLanguage.allCases, id: \.rawValue) { language in
+                                        Button(language.displayName) {
+                                            lang.language = language
+                                        }
+                                    }
+                                } label: {
+                                    HStack(spacing: 4) {
+                                        Text(lang.language.displayName)
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(theme.accentLight)
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(Color.diaryTertiary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // AI section
-                    section(title: "ШІ ПОМІЧНИК") {
+                    section(title: lang.l("AI ASSISTANT", "ШІ ПОМІЧНИК")) {
                         settingsRow(icon: "sparkles", iconColor: theme.accent) {
                             Toggle(isOn: Binding(
                                 get: { viewModel.aiInsightsEnabled },
                                 set: { viewModel.aiInsightsEnabled = $0 }
                             )) {
-                                Text("AI-підказки")
+                                Text(lang.l("AI Tips", "AI підказки"))
                                     .font(.system(size: 16))
                                     .foregroundStyle(Color.diaryPrimaryText)
                             }
@@ -225,7 +254,7 @@ struct SettingsView: View {
                     }
 
                     Button(action: { viewModel.signOut(completion: onSignOut) }) {
-                        Text("Вийти з акаунту")
+                        Text(lang.l("Sign Out", "Вийти"))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundStyle(Color(hex: "#FF4B4B"))
                             .frame(maxWidth: .infinity)
@@ -260,7 +289,7 @@ struct SettingsView: View {
                     .foregroundStyle(theme.accentLight)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(viewModel.currentUser?.displayName ?? "Користувач")
+                Text(viewModel.currentUser?.displayName ?? "User")
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.diaryPrimaryText)
                 Text(viewModel.currentUser?.email ?? "")

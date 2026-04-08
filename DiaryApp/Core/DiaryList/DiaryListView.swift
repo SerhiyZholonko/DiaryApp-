@@ -8,6 +8,7 @@ struct DiaryListView: View {
     let namespace: Namespace.ID
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = DiaryListViewModel()
     @AppStorage("ai_insights_enabled") private var aiInsightsEnabled = true
     @State private var appeared = false
@@ -35,7 +36,7 @@ struct DiaryListView: View {
 
                     // Mood display (read-only)
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Настрій сьогодні")
+                        Text(lang.l("Today's Mood", "Настрій сьогодні"))
                             .font(.system(size: 13))
                             .foregroundStyle(Color.diarySecondary)
                             .padding(.horizontal, 20)
@@ -141,7 +142,7 @@ struct DiaryListView: View {
                         .font(.system(size: 16))
                         .foregroundStyle(theme.accent)
                 }
-                Text("Мій Щоденник")
+                Text(lang.l("My Diary", "Мій Щоденник"))
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(Color.diaryPrimaryText)
             }
@@ -157,14 +158,14 @@ struct DiaryListView: View {
         VStack(spacing: 16) {
             Text("📖")
                 .font(.system(size: 48))
-            Text("Поки немає записів")
+            Text(lang.l("No entries yet", "Записів немає"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
-            Text("Натисни + щоб створити перший запис")
+            Text(lang.l("Tap + to create your first entry", "Натисни + щоб створити перший запис"))
                 .font(.system(size: 14))
                 .foregroundStyle(Color.diarySecondary)
             Button(action: onNewEntry) {
-                Text("Створити запис")
+                Text(lang.l("Create Entry", "Створити запис"))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
@@ -202,18 +203,14 @@ struct StreakBadge: View {
     }
 
     private func dayLabel(_ count: Int) -> String {
-        let mod = count % 10
-        let mod100 = count % 100
-        if mod100 >= 11 && mod100 <= 14 { return "днів" }
-        if mod == 1 { return "день" }
-        if mod >= 2 && mod <= 4 { return "дні" }
-        return "днів"
+        LanguageManager.shared.l(count == 1 ? "day" : "days",
+                                  count == 1 ? "день" : "днів")
     }
 }
 
 #Preview {
-    @Namespace var ns
-    return DiaryListView(onNewEntry: {}, onEdit: { _ in }, namespace: ns)
+    @Previewable @Namespace var ns
+    DiaryListView(onNewEntry: {}, onEdit: { _ in }, namespace: ns)
         .environmentObject(AppTheme())
         .preferredColorScheme(.dark)
 }

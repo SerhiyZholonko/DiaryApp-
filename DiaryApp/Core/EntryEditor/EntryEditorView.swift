@@ -4,6 +4,7 @@ import SwiftUI
 
 struct EntryEditorView: View {
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel: EntryEditorViewModel
     @State private var isTextFocused = false
     @StateObject private var editorController = MarkdownEditorController()
@@ -74,6 +75,7 @@ struct EntryEditorView: View {
             )
             .presentationDetents([.medium])
             .environmentObject(theme)
+            .environmentObject(lang)
         }
         .fullScreenCover(isPresented: Binding(
             get: { fullscreenIndex != nil },
@@ -95,13 +97,13 @@ struct EntryEditorView: View {
     // MARK: - Nav Bar
     private var navBar: some View {
         HStack {
-            Button("Скасувати") { dismissAction() }
+            Button(lang.l("Cancel", "Скасувати")) { dismissAction() }
                 .font(.system(size: 16))
                 .foregroundStyle(Color.diaryPrimaryText.opacity(0.6))
 
             Spacer()
 
-            Text(viewModel.isEditing ? "Редагувати" : "Новий запис")
+            Text(viewModel.isEditing ? lang.l("Edit Entry", "Редагувати запис") : lang.l("New Entry", "Новий запис"))
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
@@ -113,7 +115,7 @@ struct EntryEditorView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, 7)
                 } else {
-                    Text("Зберегти")
+                    Text(lang.l("Save", "Зберегти"))
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 16)
@@ -150,7 +152,7 @@ struct EntryEditorView: View {
                     .year()
                     .hour()
                     .minute()
-                    .locale(Locale(identifier: "uk_UA"))
+                    .locale(lang.locale)
             ).capitalized)
             .font(.system(size: 14))
             .foregroundStyle(Color.diarySecondary)
@@ -164,12 +166,12 @@ struct EntryEditorView: View {
     // MARK: - Edit / Preview Toggle
     private var editPreviewToggle: some View {
         HStack(spacing: 0) {
-            toggleSegment(title: "Редагувати", icon: "pencil", isActive: !showPreview) {
+            toggleSegment(title: lang.l("Edit", "Редагувати"), icon: "pencil", isActive: !showPreview) {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     showPreview = false
                 }
             }
-            toggleSegment(title: "Перегляд", icon: "eye", isActive: showPreview) {
+            toggleSegment(title: lang.l("Preview", "Перегляд"), icon: "eye", isActive: showPreview) {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     showPreview = true
                     isTextFocused = false
@@ -203,7 +205,7 @@ struct EntryEditorView: View {
     // MARK: - Mood Section
     private var moodSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Як ти почуваєшся?")
+            Text(lang.l("How are you feeling?", "Як ти почуваєшся?"))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.diarySecondary)
 
@@ -239,7 +241,7 @@ struct EntryEditorView: View {
     // MARK: - Tags Section
     private var tagsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Теги")
+            Text(lang.l("Tags", "Теги"))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.diarySecondary)
 
@@ -264,7 +266,7 @@ struct EntryEditorView: View {
                     }
 
                     HStack(spacing: 4) {
-                        TextField("+ Додати", text: $viewModel.tagInput)
+                        TextField(lang.l("+ Add", "+ Додати"), text: $viewModel.tagInput)
                             .font(.system(size: 13))
                             .foregroundStyle(Color.diaryPrimaryText)
                             .frame(maxWidth: viewModel.tagInput.isEmpty ? 70 : 120)
@@ -320,7 +322,7 @@ struct EntryEditorView: View {
         VStack(alignment: .trailing, spacing: 8) {
             ZStack(alignment: .topLeading) {
                 if viewModel.text.isEmpty {
-                    Text("Почни писати...")
+                    Text(lang.l("Start writing...", "Почни писати..."))
                         .font(.system(size: 16))
                         .foregroundStyle(Color.diaryTertiary)
                         .padding(.top, 8)
@@ -337,7 +339,7 @@ struct EntryEditorView: View {
             }
 
             if viewModel.wordCount > 0 {
-                Text("\(viewModel.wordCount) слів")
+                Text("\(viewModel.wordCount) \(lang.l(viewModel.wordCount == 1 ? "word" : "words", viewModel.wordCount == 1 ? "слово" : "слів"))")
                     .font(.system(size: 12))
                     .foregroundStyle(Color.diaryTertiary)
             }
@@ -359,7 +361,7 @@ struct EntryEditorView: View {
     // MARK: - Media Strip
     private var mediaStrip: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Медіа")
+            Text(lang.l("Media", "Медіа"))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundStyle(Color.diarySecondary)
 

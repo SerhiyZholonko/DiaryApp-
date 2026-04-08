@@ -9,6 +9,7 @@ struct VoiceRecorderSheet: View {
     let onTranscription: (String) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var recorder = VoiceRecorder()
 
     private enum SheetState { case idle, recording, done(URL), transcribing }
@@ -23,7 +24,7 @@ struct VoiceRecorderSheet: View {
                 .frame(width: 36, height: 5)
                 .padding(.top, 12)
 
-            Text("Голосова нотатка")
+            Text(lang.l("Voice Note", "Голосова нотатка"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
                 .padding(.top, 18)
@@ -82,7 +83,7 @@ struct VoiceRecorderSheet: View {
 
             Spacer().frame(height: 16)
 
-            Text(recorder.isRecording ? "Натисни щоб зупинити" : "Натисни щоб почати запис")
+            Text(recorder.isRecording ? lang.l("Tap to stop", "Натисни щоб зупинити") : lang.l("Tap to start recording", "Натисни щоб почати"))
                 .font(.system(size: 13))
                 .foregroundStyle(Color.diarySecondary)
         }
@@ -96,7 +97,7 @@ struct VoiceRecorderSheet: View {
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(Color(hex: "#4CAF50"))
-                Text("Запис завершено · \(recorder.timeString)")
+                Text("\(lang.l("Recording done", "Запис завершено")) · \(recorder.timeString)")
                     .font(.system(size: 15))
                     .foregroundStyle(Color.diaryPrimaryText)
             }
@@ -120,7 +121,7 @@ struct VoiceRecorderSheet: View {
             Button(action: { transcribe(url: url) }) {
                 HStack(spacing: 8) {
                     Image(systemName: "text.bubble.fill")
-                    Text("Вставити текст")
+                    Text(lang.l("Insert as Text", "Вставити як текст"))
                         .fontWeight(.semibold)
                 }
                 .font(.system(size: 16))
@@ -141,7 +142,7 @@ struct VoiceRecorderSheet: View {
             }) {
                 HStack(spacing: 8) {
                     Image(systemName: "waveform")
-                    Text("Зберегти аудіо")
+                    Text(lang.l("Save Audio", "Зберегти аудіо"))
                         .fontWeight(.medium)
                 }
                 .font(.system(size: 16))
@@ -160,7 +161,7 @@ struct VoiceRecorderSheet: View {
                 state = .idle
                 recorder.cancel()
             }) {
-                Text("Записати знову")
+                Text(lang.l("Record Again", "Записати знову"))
                     .font(.system(size: 14))
                     .foregroundStyle(Color.diarySecondary)
             }
@@ -174,7 +175,7 @@ struct VoiceRecorderSheet: View {
             ProgressView()
                 .scaleEffect(1.4)
                 .tint(theme.accent)
-            Text("Розпізнаю текст…")
+            Text(lang.l("Recognizing speech…", "Розпізнаю текст…"))
                 .font(.system(size: 15))
                 .foregroundStyle(Color.diarySecondary)
         }

@@ -19,7 +19,7 @@ private struct AlertViewModifier<VM: AlertDisplayable & ObservableObject>: ViewM
                 viewModel.alert?.action()
                 viewModel.alert = nil
             }
-            Button("Скасувати", role: .cancel) { viewModel.alert = nil }
+            Button(LanguageManager.shared.l("Cancel", "Скасувати"), role: .cancel) { viewModel.alert = nil }
         } message: {
             if let msg = viewModel.alert?.message { Text(msg) }
         }

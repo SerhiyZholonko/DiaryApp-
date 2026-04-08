@@ -73,11 +73,11 @@ final class GeminiService {
         var errorDescription: String? {
             switch self {
             case .unauthenticated:
-                return "Для AI-підказок потрібна авторизація."
+                return LanguageManager.shared.l("Authorization required for AI tips.", "Потрібна авторизація для AI підказок.")
             case .invalidResponse:
-                return "Невірна відповідь від AI сервісу."
+                return LanguageManager.shared.l("Invalid AI service response.", "Невірна відповідь від AI сервісу.")
             case .serverError(let code):
-                return "Помилка сервера (\(code))."
+                return LanguageManager.shared.l("Server error (\(code)).", "Помилка сервера (\(code)).")
             case .functionError(let msg):
                 return msg
             }

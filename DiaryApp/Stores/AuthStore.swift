@@ -38,13 +38,14 @@ final class AuthStore: AuthStoreProtocol {
 
         return AppUser(
             id: firebaseUser.uid,
-            displayName: firebaseUser.displayName ?? "Користувач",
+            displayName: firebaseUser.displayName ?? "User",
             email: firebaseUser.email ?? "",
             photoURL: firebaseUser.photoURL
         )
 #else
         try await Task.sleep(for: .seconds(1))
-        return AppUser(id: UUID().uuidString, displayName: "Тестовий Користувач",
+        return AppUser(id: UUID().uuidString,
+                       displayName: LanguageManager.shared.l("Test User", "Тестовий Користувач"),
                        email: "test@diary.app", photoURL: nil)
 #endif
     }
@@ -67,8 +68,9 @@ final class AuthStore: AuthStoreProtocol {
                 controller.delegate = delegate
                 controller.presentationContextProvider = delegate
                 // Утримуємо делегат живим на час запиту
-                objc_setAssociatedObject(controller, &AppleSignInDelegate.associatedKey,
-                                         delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                withUnsafeMutablePointer(to: &AppleSignInDelegate.associatedKey) { ptr in
+                    objc_setAssociatedObject(controller, ptr, delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                }
                 controller.performRequests()
             }
 
@@ -91,7 +93,7 @@ final class AuthStore: AuthStoreProtocol {
         if displayName.isEmpty, let fullName = appleCredential.fullName {
             displayName = PersonNameComponentsFormatter().string(from: fullName)
         }
-        if displayName.isEmpty { displayName = "Користувач" }
+        if displayName.isEmpty { displayName = LanguageManager.shared.l("User", "Користувач") }
 
         return AppUser(
             id: firebaseUser.uid,
@@ -114,7 +116,7 @@ final class AuthStore: AuthStoreProtocol {
         guard let user = Auth.auth().currentUser else { return nil }
         return AppUser(
             id: user.uid,
-            displayName: user.displayName ?? "Користувач",
+            displayName: user.displayName ?? LanguageManager.shared.l("User", "Користувач"),
             email: user.email ?? "",
             photoURL: user.photoURL
         )
@@ -164,10 +166,12 @@ private final class AppleSignInDelegate: NSObject,
     }
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first { $0.isKeyWindow } ?? UIWindow()
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+        return scene?.windows.first { $0.isKeyWindow }
+            ?? scene?.windows.first
+            ?? scene.map { UIWindow(windowScene: $0) }
+            ?? UIWindow()
     }
 }
 
@@ -179,8 +183,8 @@ enum AuthError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .missingClientID: return "Відсутній Client ID Firebase"
-        case .missingToken:    return "Не вдалося отримати токен"
+        case .missingClientID: return LanguageManager.shared.l("Missing Firebase Client ID", "Відсутній Client ID Firebase")
+        case .missingToken:    return LanguageManager.shared.l("Failed to get token", "Не вдалося отримати токен")
         }
     }
 }

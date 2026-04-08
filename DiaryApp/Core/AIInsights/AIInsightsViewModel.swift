@@ -76,31 +76,36 @@ final class AIInsightsViewModel: ObservableObject {
     // MARK: - Prompt
 
     private func buildPrompt(entries: [DiaryEntry]) -> String {
+        let isUkrainian = LanguageManager.shared.isUkrainian
+        let L = LanguageManager.shared.l
+
         let fmt = DateFormatter()
-        fmt.locale     = Locale(identifier: "uk_UA")
-        fmt.dateFormat = "d MMMM yyyy"
+        fmt.locale     = LanguageManager.shared.locale
+        fmt.dateFormat = isUkrainian ? "d MMMM yyyy" : "MMMM d, yyyy"
 
         let entriesBlock = entries.map { e -> String in
-            var lines = ["Дата: \(fmt.string(from: e.createdAt))"]
-            if let m = e.mood    { lines.append("Настрій: \(m.label) \(m.emoji)") }
-            if !e.tags.isEmpty   { lines.append("Теги: \(e.tags.joined(separator: ", "))") }
+            var lines = ["\(L("Date", "Дата")): \(fmt.string(from: e.createdAt))"]
+            if let m = e.mood    { lines.append("\(L("Mood", "Настрій")): \(m.label) \(m.emoji)") }
+            if !e.tags.isEmpty   { lines.append("\(L("Tags", "Теги")): \(e.tags.joined(separator: ", "))") }
             let preview = String(e.text.prefix(400))
-            if !preview.isEmpty  { lines.append("Текст: \(preview)") }
+            if !preview.isEmpty  { lines.append("\(L("Text", "Текст")): \(preview)") }
             return lines.joined(separator: "\n")
         }.joined(separator: "\n\n---\n\n")
 
-        return """
-        Ти — емпатичний асистент для особистого щоденника. Аналізуй записи та надавай корисні інсайти ВИКЛЮЧНО українською мовою.
+        let language = isUkrainian ? "Ukrainian" : "English"
 
-        Останні записи щоденника користувача:
+        return """
+        You are an empathetic personal diary assistant. Analyze the entries and provide useful insights ONLY in \(language).
+
+        Recent diary entries:
 
         \(entriesBlock)
 
-        Завдання:
-        1. Згенеруй одне персоналізоване запитання для роздумів. Звертайся на «ти». Спирайся на конкретні теми, події або настрої з записів (не загальні питання).
-        2. Опиши один помічений емоційний паттерн або тенденцію (2–3 речення). Будь конкретним.
+        Tasks:
+        1. Generate one personalized reflection question. Address the user as "you". Base it on specific topics, events or moods from the entries (not generic questions).
+        2. Describe one observed emotional pattern or trend (2–3 sentences). Be specific.
 
-        Відповідай ТІЛЬКИ у форматі JSON (без markdown, без зайвих символів):
+        Respond ONLY in JSON format (no markdown, no extra characters):
         {"question": "...", "pattern": "..."}
         """
     }
@@ -165,6 +170,6 @@ final class AIInsightsViewModel: ObservableObject {
 
     private enum ParseError: LocalizedError {
         case invalidFormat
-        var errorDescription: String? { "Не вдалося розібрати відповідь AI. Спробуйте ще раз." }
+        var errorDescription: String? { LanguageManager.shared.l("Failed to parse AI response. Please try again.", "Не вдалося розібрати відповідь AI. Спробуй знову.") }
     }
 }

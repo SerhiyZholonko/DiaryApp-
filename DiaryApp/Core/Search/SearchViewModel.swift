@@ -68,10 +68,11 @@ enum SearchFilter: Equatable {
     case all, today, thisWeek, mood(MoodLevel), tag(String)
 
     var label: String {
+        let L = LanguageManager.shared.l
         switch self {
-        case .all:          return "Всі"
-        case .today:        return "Сьогодні"
-        case .thisWeek:     return "Цей тиждень"
+        case .all:          return L("All", "Всі")
+        case .today:        return L("Today", "Сьогодні")
+        case .thisWeek:     return L("This Week", "Цей тиждень")
         case .mood(let m):  return m.emoji
         case .tag(let t):   return "#\(t)"
         }

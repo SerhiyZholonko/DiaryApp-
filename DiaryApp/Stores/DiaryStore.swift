@@ -50,7 +50,7 @@ final class DiaryStore: DiaryStoreProtocol {
 
 enum DiaryStoreError: LocalizedError {
     case notAuthenticated
-    var errorDescription: String? { "Будь ласка, увійдіть в акаунт" }
+    var errorDescription: String? { LanguageManager.shared.l("Please sign in to continue", "Будь ласка, увійдіть в акаунт") }
 }
 
 // MARK: - Firestore Mapping

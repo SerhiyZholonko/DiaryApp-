@@ -10,8 +10,9 @@ extension View {
 
 private struct ErrorViewModifier<VM: ErrorDisplayable & ObservableObject>: ViewModifier {
     @ObservedObject var viewModel: VM
+    @ObservedObject private var lang = LanguageManager.shared
     func body(content: Content) -> some View {
-        content.alert("Помилка", isPresented: Binding(
+        content.alert(lang.l("Error", "Помилка"), isPresented: Binding(
             get: { viewModel.error != nil },
             set: { if !$0 { viewModel.error = nil } }
         )) {

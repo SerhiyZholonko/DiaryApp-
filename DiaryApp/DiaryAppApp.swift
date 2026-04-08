@@ -21,6 +21,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct DiaryAppApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject private var theme = AppTheme()
+    @StateObject private var languageManager = LanguageManager.shared
     @AppStorage("appearance_mode") private var appearanceMode = 0
 
     private var colorScheme: ColorScheme? {
@@ -37,6 +38,7 @@ struct DiaryAppApp: App {
         WindowGroup {
             AppStartingView()
                 .environmentObject(theme)
+                .environmentObject(languageManager)
                 .tint(theme.accent)
                 .preferredColorScheme(colorScheme)
                 .onOpenURL { url in

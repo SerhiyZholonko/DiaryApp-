@@ -7,6 +7,7 @@ struct TagEntriesView: View {
     let onEdit: (DiaryEntry) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = SearchViewModel()
 
     var body: some View {
@@ -39,7 +40,7 @@ struct TagEntriesView: View {
 
                 if viewModel.results.isEmpty {
                     Spacer()
-                    Text("Немає записів з тегом #\(tag)")
+                    Text(lang.l("No entries with tag #\(tag)", "Немає записів з тегом #\(tag)"))
                         .font(.system(size: 16))
                         .foregroundStyle(Color.diarySecondary)
                     Spacer()
@@ -75,11 +76,6 @@ struct TagEntriesView: View {
     }
 
     private func entryLabel(_ count: Int) -> String {
-        let mod10 = count % 10
-        let mod100 = count % 100
-        if mod100 >= 11 && mod100 <= 14 { return "записів" }
-        if mod10 == 1 { return "запис" }
-        if mod10 >= 2 && mod10 <= 4 { return "записи" }
-        return "записів"
+        lang.l(count == 1 ? "entry" : "entries", count == 1 ? "запис" : "записів")
     }
 }

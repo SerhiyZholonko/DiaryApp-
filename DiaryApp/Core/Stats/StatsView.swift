@@ -7,6 +7,7 @@ struct StatsView: View {
     let onEdit: (DiaryEntry) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @Environment(\.horizontalSizeClass) private var sizeClass
     @StateObject private var viewModel = StatsViewModel()
     @State private var selectedTag: String? = nil
@@ -38,7 +39,7 @@ struct StatsView: View {
                                 .font(.system(size: isRegular ? 22 : 16))
                                 .foregroundStyle(theme.accent)
                         }
-                        Text("Статистика")
+                        Text(lang.l("Statistics", "Статистика"))
                             .font(.system(size: isRegular ? 30 : 22, weight: .bold))
                             .foregroundStyle(Color.diaryPrimaryText)
                         Spacer()
@@ -50,9 +51,9 @@ struct StatsView: View {
 
                     // Summary cards
                     HStack(spacing: 12) {
-                        StatCard(title: "Записів",  value: "\(viewModel.totalEntries)", icon: "doc.text.fill")
-                        StatCard(title: "Слів",     value: formatNumber(viewModel.totalWords), icon: "text.alignleft")
-                        StatCard(title: "Серія",    value: "\(viewModel.currentStreak)🔥", icon: "flame.fill")
+                        StatCard(title: lang.l("Entries", "Записів"),  value: "\(viewModel.totalEntries)", icon: "doc.text.fill")
+                        StatCard(title: lang.l("Words", "Слів"),    value: formatNumber(viewModel.totalWords), icon: "text.alignleft")
+                        StatCard(title: lang.l("Streak", "Серія"),   value: "\(viewModel.currentStreak)🔥", icon: "flame.fill")
                     }
 
                     // Mood chart
@@ -82,6 +83,7 @@ struct StatsView: View {
                 onEdit(entry)
             })
             .environmentObject(theme)
+            .environmentObject(lang)
         }
     }
 
@@ -93,14 +95,14 @@ struct StatsView: View {
                 ForEach(-11...0, id: \.self) { offset in
                     if let date = Calendar.current.date(byAdding: .month, value: offset, to: .now) {
                         Button(action: { viewModel.selectedMonth = date }) {
-                            Text(date.formatted(.dateTime.month(.wide).year().locale(Locale(identifier: "uk_UA"))).capitalized)
+                            Text(date.formatted(.dateTime.month(.wide).year().locale(lang.locale)).capitalized)
                         }
                     }
                 }
             } label: {
                 HStack(spacing: 4) {
                     Text(viewModel.selectedMonth.formatted(
-                        .dateTime.month(.wide).year().locale(Locale(identifier: "uk_UA"))
+                        .dateTime.month(.wide).year().locale(lang.locale)
                     ).capitalized)
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Color.diaryPrimaryText)
@@ -119,13 +121,13 @@ struct StatsView: View {
     // MARK: - Mood chart
     private var moodChart: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Настрій за місяць")
+            Text(lang.l("Mood This Month", "Настрій цього місяця"))
                 .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
             ZStack {
                 if viewModel.moodChartData.isEmpty {
-                    Text("Немає даних за цей місяць")
+                    Text(lang.l("No data for this month", "Немає даних за цей місяць"))
                         .font(.system(size: 14))
                         .foregroundStyle(Color.diarySecondary)
                         .frame(maxWidth: .infinity)
@@ -151,8 +153,8 @@ struct StatsView: View {
 
                             Chart(viewModel.moodChartData, id: \.day) { item in
                                 BarMark(
-                                    x: .value("День", item.day),
-                                    y: .value("Настрій", item.mood),
+                                    x: .value(lang.l("Day", "День"), item.day),
+                                    y: .value(lang.l("Mood", "Настрій"), item.mood),
                                     width: .fixed(barWidth)
                                 )
                                 .foregroundStyle(moodColor(for: item.mood))
@@ -185,7 +187,7 @@ struct StatsView: View {
     // MARK: - Activity heatmap
     private var activityHeatmap: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Активність (рік)")
+            Text(lang.l("Activity (Year)", "Активність (рік)"))
                 .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
@@ -228,12 +230,12 @@ struct StatsView: View {
     // MARK: - Top tags
     private var topTagsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Топ теги")
+            Text(lang.l("Top Tags", "Топ теги"))
                 .font(.system(size: sectionTitleSize, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
             if viewModel.topTags.isEmpty {
-                Text("Немає тегів")
+                Text(lang.l("No tags yet", "Ще немає тегів"))
                     .font(.system(size: isRegular ? 16 : 14))
                     .foregroundStyle(Color.diarySecondary)
             } else {
@@ -249,7 +251,7 @@ struct StatsView: View {
                                     .foregroundStyle(Color.diaryPrimaryText)
                                 Spacer()
                                 HStack(spacing: 4) {
-                                    Text("\(item.count) зап.")
+                                    Text("\(item.count) \(lang.l(item.count == 1 ? "entry" : "entries", item.count == 1 ? "запис" : "записів"))")
                                         .font(.system(size: isRegular ? 15 : 13))
                                         .foregroundStyle(Color.diarySecondary)
                                     Image(systemName: "chevron.right")

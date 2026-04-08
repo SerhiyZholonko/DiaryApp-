@@ -4,6 +4,7 @@ import SwiftUI
 
 struct AIInsightsCard: View {
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = AIInsightsViewModel()
 
     @State private var selectedTab: InsightTab = .question
@@ -12,8 +13,8 @@ struct AIInsightsCard: View {
         case question, pattern
         var title: String {
             switch self {
-            case .question: return "Запитання"
-            case .pattern:  return "Паттерн"
+            case .question: return LanguageManager.shared.l("Question", "Запитання")
+            case .pattern:  return LanguageManager.shared.l("Pattern", "Паттерн")
             }
         }
         var icon: String {
@@ -56,7 +57,7 @@ struct AIInsightsCard: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(theme.accent)
 
-            Text("AI-підказки")
+            Text(lang.l("AI Tips", "AI підказки"))
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
 
@@ -141,7 +142,7 @@ struct AIInsightsCard: View {
     private var loadingView: some View {
         HStack(spacing: 8) {
             ProgressView().tint(theme.accent).scaleEffect(0.8)
-            Text("Аналізую записи…")
+            Text(lang.l("Analyzing entries…", "Аналізую записи…"))
                 .font(.system(size: 13))
                 .foregroundStyle(Color.diarySecondary)
         }
@@ -154,7 +155,7 @@ struct AIInsightsCard: View {
             HStack(spacing: 6) {
                 Image(systemName: "sparkles")
                     .font(.system(size: 12))
-                Text("Отримати підказки")
+                Text(lang.l("Get Insights", "Отримати підказки"))
                     .font(.system(size: 13, weight: .medium))
             }
             .foregroundStyle(theme.accent)
@@ -169,7 +170,7 @@ struct AIInsightsCard: View {
             Image(systemName: "key.fill")
                 .font(.system(size: 12))
                 .foregroundStyle(Color.diarySecondary)
-            Text("Додайте Gemini API ключ у Налаштуваннях")
+            Text(lang.l("Add Gemini API key in Settings", "Додай Gemini API ключ в налаштуваннях"))
                 .font(.system(size: 12))
                 .foregroundStyle(Color.diarySecondary)
         }
@@ -188,7 +189,7 @@ struct AIInsightsCard: View {
                     .font(.system(size: 12))
                     .foregroundStyle(Color.diarySecondary)
                 Button(action: { viewModel.refresh() }) {
-                    Text("Спробувати знову")
+                    Text(lang.l("Try Again", "Спробувати знову"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(theme.accent)
                 }

@@ -11,6 +11,7 @@ struct MediaPickerSheet: View {
     let onTranscription: (String) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @State private var showCamera = false
     @State private var showPhotoPicker = false
     @State private var showVideoPicker = false
@@ -24,7 +25,7 @@ struct MediaPickerSheet: View {
                 .frame(width: 36, height: 5)
                 .padding(.top, 12)
 
-            Text("Додати медіа")
+            Text(lang.l("Add Media", "Додати медіа"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
                 .padding(.top, 18)
@@ -36,27 +37,27 @@ struct MediaPickerSheet: View {
                 spacing: 16
             ) {
                 // Камера: відкриваємо поверх sheet (без попереднього dismiss)
-                mediaOption(title: "Фотографія", icon: "camera.fill", color: Color(hex: "#FF8C42")) {
+                mediaOption(title: lang.l("Camera", "Камера"), icon: "camera.fill", color: Color(hex: "#FF8C42")) {
                     showCamera = true
                 }
-                mediaOption(title: "Галерея", icon: "photo.fill", color: Color(hex: "#4A90D9")) {
+                mediaOption(title: lang.l("Gallery", "Галерея"), icon: "photo.fill", color: Color(hex: "#4A90D9")) {
                     showPhotoPicker = true
                 }
-                mediaOption(title: "Відео", icon: "video.fill", color: Color(hex: "#4CAF50")) {
+                mediaOption(title: lang.l("Video", "Відео"), icon: "video.fill", color: Color(hex: "#4CAF50")) {
                     showVideoPicker = true
                 }
                 mediaOption(
-                    title: "Голосові\nнотатки",
+                    title: lang.l("Voice\nNotes", "Голосові\nнотатки"),
                     icon: "mic.fill",
                     color: Color(hex: "#9B85FF")
                 ) {
                     showVoiceRecorder = true
                 }
                 mediaOption(
-                    title: "Файли",
+                    title: lang.l("Files", "Файли"),
                     icon: "doc.fill",
                     color: Color.diarySecondary,
-                    badge: "Незабаром",
+                    badge: lang.l("Soon", "Скоро"),
                     disabled: true,
                     action: {}
                 )
@@ -109,6 +110,7 @@ struct MediaPickerSheet: View {
             )
             .presentationDetents([.medium, .large])
             .environmentObject(theme)
+            .environmentObject(lang)
         }
     }
 

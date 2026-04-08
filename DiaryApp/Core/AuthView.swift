@@ -6,6 +6,7 @@ struct AuthView: View {
     let onSignedIn: (AppUser) -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = AuthViewModel()
     @State private var appeared = false
 
@@ -51,7 +52,7 @@ struct AuthView: View {
                         .font(.system(size: 36, weight: .bold))
                         .foregroundStyle(theme.accentLight)
 
-                    Text("Твоє особисте місце для думок")
+                    Text(lang.l("Your personal place for thoughts", "Особисте місце для думок"))
                         .font(.system(size: 15))
                         .foregroundStyle(Color.diarySecondary)
                 }
@@ -64,10 +65,10 @@ struct AuthView: View {
                 // Sign-in card
                 VStack(spacing: 20) {
                     VStack(spacing: 6) {
-                        Text("Увійти")
+                        Text(lang.l("Sign In", "Увійти"))
                             .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(Color.diaryPrimaryText)
-                        Text("Обери зручний спосіб входу")
+                        Text(lang.l("Choose a sign-in method", "Обери спосіб входу"))
                             .font(.system(size: 14))
                             .foregroundStyle(Color.diarySecondary)
                     }
@@ -79,7 +80,7 @@ struct AuthView: View {
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundStyle(Color(hex: "#4285F4"))
                                 .frame(width: 24)
-                            Text("Продовжити з Google")
+                            Text(lang.l("Continue with Google", "Продовжити з Google"))
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundStyle(.black)
                         }
@@ -102,7 +103,7 @@ struct AuthView: View {
                     // Divider
                     HStack {
                         Rectangle().fill(Color.diaryDivider).frame(height: 1)
-                        Text("або").font(.system(size: 13)).foregroundStyle(Color.diarySecondary)
+                        Text(lang.l("or", "або")).font(.system(size: 13)).foregroundStyle(Color.diarySecondary)
                         Rectangle().fill(Color.diaryDivider).frame(height: 1)
                     }
 
@@ -111,7 +112,7 @@ struct AuthView: View {
                         HStack(spacing: 12) {
                             Image(systemName: "apple.logo")
                                 .font(.system(size: 18))
-                            Text("Продовжити з Apple")
+                            Text(lang.l("Continue with Apple", "Продовжити з Apple"))
                                 .font(.system(size: 16, weight: .medium))
                         }
                         .foregroundStyle(.black)
@@ -124,7 +125,8 @@ struct AuthView: View {
                     .buttonStyle(SpringButtonStyle())
                     .disabled(viewModel.isLoading)
 
-                    Text("Продовжуючи, ти погоджуєшся з Умовами та Політикою конфіденційності")
+                    Text(lang.l("By continuing, you agree to our Terms and Privacy Policy",
+                                "Продовжуючи, ви погоджуєтесь з нашими умовами та політикою конфіденційності"))
                         .font(.system(size: 11))
                         .foregroundStyle(Color.diaryTertiary)
                         .multilineTextAlignment(.center)

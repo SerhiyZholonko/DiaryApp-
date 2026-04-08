@@ -62,6 +62,7 @@ struct LockScreenView: View {
     let onUnlock: () -> Void
 
     @EnvironmentObject private var theme: AppTheme
+    @EnvironmentObject private var lang: LanguageManager
 
     var body: some View {
         ZStack {
@@ -70,11 +71,11 @@ struct LockScreenView: View {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 56))
                     .foregroundStyle(theme.accent)
-                Text("Щоденник заблоковано")
+                Text(lang.l("Diary Locked", "Щоденник заблоковано"))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundStyle(Color.diaryPrimaryText)
                 Button(action: onUnlock) {
-                    Label("Розблокувати", systemImage: "faceid")
+                    Label(lang.l("Unlock", "Розблокувати"), systemImage: "faceid")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 32)

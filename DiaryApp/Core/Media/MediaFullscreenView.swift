@@ -52,7 +52,7 @@ struct MediaFullscreenView: View {
                     } label: {
                         HStack(spacing: 6) {
                             Image(systemName: "chevron.left")
-                            Text("Назад")
+                            Text("Back")
                         }
                         .font(.system(size: 16))
                         .foregroundStyle(.white)

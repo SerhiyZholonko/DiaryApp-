@@ -33,7 +33,8 @@ final class SecurityStore {
     func authenticate() async throws -> Bool {
         let ctx = LAContext()
         var nsError: NSError?
-        let reason = "Підтвердіть вашу особистість для доступу до щоденника"
+        let reason = LanguageManager.shared.l("Confirm your identity to access your diary",
+                                               "Підтвердь свою особистість для доступу до щоденника")
 
         if ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &nsError) {
             // Спробуємо Face ID / Touch ID

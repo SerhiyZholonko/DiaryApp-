@@ -84,12 +84,13 @@ final class SettingsViewModel: ObservableObject, ErrorDisplayable, AlertDisplaya
     let autoLockOptions = [1, 5, 15, 0]  // 0 = одразу
 
     func autoLockLabel(_ minutes: Int) -> String {
+        let L = LanguageManager.shared.l
         switch minutes {
-        case 0:  return "Одразу"
-        case 1:  return "1 хвилина"
-        case 5:  return "5 хвилин"
-        case 15: return "15 хвилин"
-        default: return "\(minutes) хв"
+        case 0:  return L("Immediately", "Одразу")
+        case 1:  return L("1 minute", "1 хвилина")
+        case 5:  return L("5 minutes", "5 хвилин")
+        case 15: return L("15 minutes", "15 хвилин")
+        default: return "\(minutes) \(L("min", "хв"))"
         }
     }
 }
