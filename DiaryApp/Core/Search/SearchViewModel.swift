@@ -67,8 +67,18 @@ final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayabl
 enum SearchFilter: Equatable {
     case all, today, thisWeek, mood(MoodLevel), tag(String)
 
+    var stableId: String {
+        switch self {
+        case .all:          return "all"
+        case .today:        return "today"
+        case .thisWeek:     return "thisWeek"
+        case .mood(let m):  return "mood_\(m.rawValue)"
+        case .tag(let t):   return "tag_\(t)"
+        }
+    }
+
     var label: String {
-        let L = LanguageManager.shared.l
+        let L: (String, String) -> String = LanguageManager.shared.l
         switch self {
         case .all:          return L("All", "Всі")
         case .today:        return L("Today", "Сьогодні")

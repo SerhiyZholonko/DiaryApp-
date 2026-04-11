@@ -27,6 +27,18 @@ final class DiaryStore: DiaryStoreProtocol {
         return snapshot.documents.compactMap { DiaryEntry(document: $0) }
     }
 
+    func fetchEntries(limit: Int, after cursor: AnyObject?) async throws -> (entries: [DiaryEntry], cursor: AnyObject?) {
+        let ref = try entriesRef()
+        var query: Query = ref.order(by: "createdAt", descending: true).limit(to: limit)
+        if let doc = cursor as? DocumentSnapshot {
+            query = query.start(afterDocument: doc)
+        }
+        let snapshot = try await query.getDocuments()
+        let entries = snapshot.documents.compactMap { DiaryEntry(document: $0) }
+        let nextCursor: AnyObject? = entries.count == limit ? snapshot.documents.last : nil
+        return (entries, nextCursor)
+    }
+
     func saveEntry(_ entry: DiaryEntry) async throws {
         let ref = try entriesRef()
         try await ref.document(entry.id).setData(entry.firestoreData, merge: true)

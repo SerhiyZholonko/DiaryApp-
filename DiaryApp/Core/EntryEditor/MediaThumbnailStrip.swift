@@ -5,6 +5,7 @@ import SwiftUI
 struct MediaThumbnailStrip: View {
     let entryId: String
     let attachments: [MediaAttachment]
+    var isEditMode: Bool = true
     let onRemove: (MediaAttachment) -> Void
     let onTap: (Int) -> Void
 
@@ -15,7 +16,7 @@ struct MediaThumbnailStrip: View {
                     MediaThumbnailCell(
                         attachment: attachment,
                         entryId: entryId,
-                        showRemove: true,
+                        showRemove: isEditMode,
                         onRemove: { onRemove(attachment) },
                         onTap: { onTap(idx) }
                     )

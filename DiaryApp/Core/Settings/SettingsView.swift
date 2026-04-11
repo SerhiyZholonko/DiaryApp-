@@ -115,7 +115,11 @@ struct SettingsView: View {
                                         ),
                                         displayedComponents: .hourAndMinute
                                     )
+                                    #if targetEnvironment(macCatalyst)
+                                    .datePickerStyle(.graphical)
+                                    #else
                                     .datePickerStyle(.compact)
+                                    #endif
                                     .labelsHidden()
                                     .tint(theme.accent)
                                 }
@@ -270,6 +274,7 @@ struct SettingsView: View {
             }
         }
         .showError(viewModel: viewModel)
+        .onAppear { viewModel.syncReminderFromCloud() }
     }
 
     // MARK: - Profile Card

@@ -6,7 +6,7 @@ enum AppError: LocalizedError {
     case unknown, networkError, unauthorized, invalidData
 
     var errorDescription: String? {
-        let L = LanguageManager.shared.l
+        let L: (String, String) -> String = LanguageManager.shared.l
         switch self {
         case .unknown:      return L("Unknown error. Please try again", "Невідома помилка. Спробуй знову")
         case .networkError: return L("Network error. Check your connection", "Помилка мережі. Перевір з'єднання")

@@ -36,7 +36,7 @@ struct TagEntriesView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
-                .padding(.bottom, 16)
+                .padding(.bottom, 8)
 
                 if viewModel.results.isEmpty {
                     Spacer()
@@ -51,7 +51,7 @@ struct TagEntriesView: View {
                                 .font(.system(size: 13))
                                 .foregroundStyle(Color.diarySecondary)
                                 .padding(.horizontal, 20)
-                                .padding(.bottom, 12)
+                                .padding(.bottom, 8)
 
                             ForEach(viewModel.results) { entry in
                                 DiaryEntryCard(

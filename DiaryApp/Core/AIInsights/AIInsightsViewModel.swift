@@ -77,7 +77,7 @@ final class AIInsightsViewModel: ObservableObject {
 
     private func buildPrompt(entries: [DiaryEntry]) -> String {
         let isUkrainian = LanguageManager.shared.isUkrainian
-        let L = LanguageManager.shared.l
+        let L: (String, String) -> String = LanguageManager.shared.l
 
         let fmt = DateFormatter()
         fmt.locale     = LanguageManager.shared.locale

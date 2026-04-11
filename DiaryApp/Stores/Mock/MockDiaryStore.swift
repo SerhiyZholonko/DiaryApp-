@@ -41,6 +41,13 @@ final class MockDiaryStore: DiaryStoreProtocol {
 
     func fetchEntries() async throws -> [DiaryEntry] { entries }
 
+    func fetchEntries(limit: Int, after cursor: AnyObject?) async throws -> (entries: [DiaryEntry], cursor: AnyObject?) {
+        let offset = (cursor as? Int) ?? 0
+        let slice = Array(entries.dropFirst(offset).prefix(limit))
+        let nextCursor: AnyObject? = (offset + slice.count < entries.count) ? (offset + slice.count) as AnyObject : nil
+        return (slice, nextCursor)
+    }
+
     func saveEntry(_ entry: DiaryEntry) async throws {
         if let idx = entries.firstIndex(where: { $0.id == entry.id }) {
             entries[idx] = entry

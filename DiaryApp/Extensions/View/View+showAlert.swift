@@ -10,6 +10,8 @@ extension View {
 
 private struct AlertViewModifier<VM: AlertDisplayable & ObservableObject>: ViewModifier {
     @ObservedObject var viewModel: VM
+    @ObservedObject private var lang = LanguageManager.shared
+
     func body(content: Content) -> some View {
         content.alert(viewModel.alert?.title ?? "", isPresented: Binding(
             get: { viewModel.alert != nil },
@@ -19,7 +21,7 @@ private struct AlertViewModifier<VM: AlertDisplayable & ObservableObject>: ViewM
                 viewModel.alert?.action()
                 viewModel.alert = nil
             }
-            Button(LanguageManager.shared.l("Cancel", "Скасувати"), role: .cancel) { viewModel.alert = nil }
+            Button(lang.l("Cancel", "Скасувати"), role: .cancel) { viewModel.alert = nil }
         } message: {
             if let msg = viewModel.alert?.message { Text(msg) }
         }

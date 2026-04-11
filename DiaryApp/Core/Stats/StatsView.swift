@@ -53,7 +53,7 @@ struct StatsView: View {
                     HStack(spacing: 12) {
                         StatCard(title: lang.l("Entries", "Записів"),  value: "\(viewModel.totalEntries)", icon: "doc.text.fill")
                         StatCard(title: lang.l("Words", "Слів"),    value: formatNumber(viewModel.totalWords), icon: "text.alignleft")
-                        StatCard(title: lang.l("Streak", "Серія"),   value: "\(viewModel.currentStreak)🔥", icon: "flame.fill")
+                        StatCard(title: lang.l("Streak", "Серія"),   value: "\(viewModel.currentStreak)", icon: "flame.fill", iconColor: streakFlameColor(viewModel.currentStreak))
                     }
 
                     // Mood chart
@@ -245,33 +245,35 @@ struct StatsView: View {
                         Button {
                             selectedTag = item.tag
                         } label: {
-                            HStack {
-                                Text("#\(item.tag)")
-                                    .font(.system(size: isRegular ? 17 : 14, weight: .medium))
-                                    .foregroundStyle(Color.diaryPrimaryText)
-                                Spacer()
-                                HStack(spacing: 4) {
-                                    Text("\(item.count) \(lang.l(item.count == 1 ? "entry" : "entries", item.count == 1 ? "запис" : "записів"))")
-                                        .font(.system(size: isRegular ? 15 : 13))
-                                        .foregroundStyle(Color.diarySecondary)
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: isRegular ? 13 : 11))
-                                        .foregroundStyle(Color.diaryTertiary)
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("#\(item.tag)")
+                                        .font(.system(size: isRegular ? 17 : 14, weight: .medium))
+                                        .foregroundStyle(Color.diaryPrimaryText)
+                                    Spacer()
+                                    HStack(spacing: 4) {
+                                        Text("\(item.count) \(lang.l(item.count == 1 ? "entry" : "entries", item.count == 1 ? "запис" : "записів"))")
+                                            .font(.system(size: isRegular ? 15 : 13))
+                                            .foregroundStyle(Color.diarySecondary)
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: isRegular ? 13 : 11))
+                                            .foregroundStyle(Color.diaryTertiary)
+                                    }
                                 }
+                                GeometryReader { geo in
+                                    RoundedRectangle(cornerRadius: isRegular ? 5 : 4)
+                                        .fill(LinearGradient(
+                                            colors: [theme.accent, theme.accent.opacity(0.6)],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ))
+                                        .frame(
+                                            width: geo.size.width * CGFloat(item.count) / CGFloat(maxCount),
+                                            height: isRegular ? 8 : 6
+                                        )
+                                }
+                                .frame(height: isRegular ? 8 : 6)
                             }
-                            GeometryReader { geo in
-                                RoundedRectangle(cornerRadius: isRegular ? 5 : 4)
-                                    .fill(LinearGradient(
-                                        colors: [theme.accent, theme.accent.opacity(0.6)],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    ))
-                                    .frame(
-                                        width: min(geo.size.width, geo.size.width * CGFloat(item.count) / CGFloat(maxCount)),
-                                        height: isRegular ? 8 : 6
-                                    )
-                            }
-                            .frame(height: isRegular ? 8 : 6)
                         }
                         .buttonStyle(.plain)
                     }
@@ -285,6 +287,16 @@ struct StatsView: View {
 
     private var daysInSelectedMonth: Int {
         Calendar.current.range(of: .day, in: .month, for: viewModel.selectedMonth)?.count ?? 31
+    }
+
+    private func streakFlameColor(_ days: Int) -> Color {
+        switch days {
+        case 1...2:   return Color(hex: "#FFD166")
+        case 3...6:   return Color(hex: "#FF8C42")
+        case 7...13:  return Color(hex: "#FF6B35")
+        case 14...29: return Color(hex: "#FF4B4B")
+        default:      return Color(hex: "#C44DFF")
+        }
     }
 
     private func moodColor(for value: Double) -> Color {
@@ -308,15 +320,23 @@ struct StatCard: View {
     let title: String
     let value: String
     let icon: String
+    var iconColor: Color? = nil
 
     @Environment(\.horizontalSizeClass) private var sizeClass
     private var isRegular: Bool { sizeClass == .regular }
 
     var body: some View {
         VStack(spacing: isRegular ? 8 : 4) {
-            Text(value)
-                .font(.system(size: isRegular ? 32 : 22, weight: .bold))
-                .foregroundStyle(Color.diaryPrimaryText)
+            HStack(spacing: 4) {
+                Text(value)
+                    .font(.system(size: isRegular ? 32 : 22, weight: .bold))
+                    .foregroundStyle(Color.diaryPrimaryText)
+                if let color = iconColor {
+                    Image(systemName: icon)
+                        .font(.system(size: isRegular ? 20 : 14, weight: .semibold))
+                        .foregroundStyle(color)
+                }
+            }
             Text(title)
                 .font(.system(size: isRegular ? 15 : 12))
                 .foregroundStyle(Color.diarySecondary)

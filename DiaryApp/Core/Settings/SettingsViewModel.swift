@@ -3,6 +3,8 @@ import Foundation
 import Combine
 import Factory
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 @MainActor
 final class SettingsViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable {
@@ -71,6 +73,37 @@ final class SettingsViewModel: ObservableObject, ErrorDisplayable, AlertDisplaya
         NotificationStore.shared.scheduleDailyReminder(at: reminderHour, minute: reminderMinute)
     }
 
+    /// Завантажує час нагадування з Firestore і синхронізує з локальним AppStorage.
+    /// Викликається при відкритті Settings.
+    func syncReminderFromCloud() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        Task {
+            guard let data = try? await Firestore.firestore()
+                .collection("users").document(uid).getDocument().data(),
+                  let enabled = data["reminderEnabled"] as? Bool,
+                  let utcHour = data["reminderHour"] as? Int,
+                  let utcMin  = data["reminderMinute"] as? Int
+            else { return }
+
+            let local = utcToLocal(hour: utcHour, minute: utcMin)
+            reminderEnabled = enabled
+            reminderHour    = local.hour
+            reminderMinute  = local.minute
+        }
+    }
+
+    private func utcToLocal(hour: Int, minute: Int) -> (hour: Int, minute: Int) {
+        var utcCal = Calendar(identifier: .gregorian)
+        utcCal.timeZone = TimeZone(identifier: "UTC")!
+        var comps = utcCal.dateComponents([.year, .month, .day], from: Date())
+        comps.hour = hour
+        comps.minute = minute
+        let utcDate = utcCal.date(from: comps) ?? Date()
+        let localCal = Calendar.current
+        return (localCal.component(.hour, from: utcDate),
+                localCal.component(.minute, from: utcDate))
+    }
+
     func signOut(completion: @escaping () -> Void) {
         do {
             try authStore.signOut()
@@ -84,7 +117,7 @@ final class SettingsViewModel: ObservableObject, ErrorDisplayable, AlertDisplaya
     let autoLockOptions = [1, 5, 15, 0]  // 0 = одразу
 
     func autoLockLabel(_ minutes: Int) -> String {
-        let L = LanguageManager.shared.l
+        let L: (String, String) -> String = LanguageManager.shared.l
         switch minutes {
         case 0:  return L("Immediately", "Одразу")
         case 1:  return L("1 minute", "1 хвилина")

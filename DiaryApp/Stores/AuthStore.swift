@@ -167,11 +167,11 @@ private final class AppleSignInDelegate: NSObject,
 
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        let scene = scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
-        return scene?.windows.first { $0.isKeyWindow }
-            ?? scene?.windows.first
-            ?? scene.map { UIWindow(windowScene: $0) }
-            ?? UIWindow()
+        // swiftlint:disable:next force_unwrap
+        let scene = (scenes.first(where: { $0.activationState == .foregroundActive }) ?? scenes.first)!
+        return scene.windows.first(where: { $0.isKeyWindow })
+            ?? scene.windows.first
+            ?? UIWindow(windowScene: scene)
     }
 }
 

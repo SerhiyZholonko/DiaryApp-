@@ -23,6 +23,16 @@ final class StatsViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable
 
     private var entries: [DiaryEntry] = []
 
+    init() {
+        NotificationCenter.default.addObserver(
+            forName: .diaryEntryUpdated,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.load() }
+        }
+    }
+
     func load() {
         Task {
             isLoading = true

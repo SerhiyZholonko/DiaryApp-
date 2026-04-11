@@ -12,6 +12,65 @@ const admin     = require("firebase-admin");
 
 admin.initializeApp();
 
+// ─────────────────────────────────────────────
+// sendDailyReminders
+// Запускається щохвилини. Знаходить юзерів,
+// у яких UTC-час нагадування збігається з поточним,
+// і шле FCM push.
+// ─────────────────────────────────────────────
+exports.sendDailyReminders = functions.pubsub
+  .schedule("every 1 minutes")
+  .onRun(async () => {
+    const now = new Date();
+    const utcHour   = now.getUTCHours();
+    const utcMinute = now.getUTCMinutes();
+
+    const snapshot = await admin.firestore()
+      .collection("users")
+      .where("reminderEnabled", "==", true)
+      .where("reminderHour",    "==", utcHour)
+      .where("reminderMinute",  "==", utcMinute)
+      .get();
+
+    if (snapshot.empty) return null;
+
+    const sends = snapshot.docs.map(async doc => {
+      const { fcmToken, language } = doc.data();
+      if (!fcmToken) return;
+
+      // Атомарно інкрементуємо badgeCount і читаємо нове значення
+      const newBadge = await admin.firestore().runTransaction(async t => {
+        const snap = await t.get(doc.ref);
+        const current = (snap.data().badgeCount ?? 0) + 1;
+        t.update(doc.ref, { badgeCount: current });
+        return current;
+      });
+
+      const isUk = language === "uk";
+      const message = {
+        token: fcmToken,
+        notification: {
+          title: isUk ? "Час записати свій день 📖" : "Time to write your day 📖",
+          body:  isUk
+            ? "Як пройшов твій день? Запиши свої думки у щоденнику."
+            : "How was your day? Write your thoughts in the diary.",
+        },
+        apns: { payload: { aps: { sound: "default", badge: newBadge } } },
+      };
+
+      return admin.messaging().send(message)
+        .catch(err => {
+          console.error(`[FCM] failed for ${doc.id}:`, err.message);
+          if (err.code === "messaging/registration-token-not-registered") {
+            return doc.ref.update({ reminderEnabled: false });
+          }
+        });
+    });
+
+    await Promise.allSettled(sends);
+    return null;
+  });
+
 const GEMINI_MODEL    = "gemini-2.5-flash";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const MAX_PROMPT_LEN  = 8000;

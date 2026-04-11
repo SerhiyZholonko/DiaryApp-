@@ -8,8 +8,13 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
     @Published var entries: [DiaryEntry] = []
     @Published var todayMood: MoodLevel?
     @Published var isLoading = false
+    @Published var isLoadingMore = false
+    @Published var hasMore = true
     @Published var error: Error?
     @Published var alert: AppAlert?
+
+    private let pageSize = 20
+    private var lastCursor: AnyObject? = nil
 
     @Injected(\.diaryStore)  private var diaryStore: DiaryStoreProtocol
     @Injected(\.streakStore) private var streakStore: StreakStoreProtocol
@@ -43,14 +48,36 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
     }
 
     func load() {
+        lastCursor = nil
+        hasMore = true
+        entries = []
+        isLoading = true
         Task(operation: {
-            isLoading = true
             defer { isLoading = false }
             do {
-                entries = try await diaryStore.fetchEntries()
+                let result = try await diaryStore.fetchEntries(limit: pageSize, after: nil)
+                entries = result.entries
+                lastCursor = result.cursor
+                hasMore = result.cursor != nil
                 streakStore.recalculate(from: entries.map(\.createdAt))
                 loadTodayMood()
                 updateWidget()
+            } catch {
+                self.error = error
+            }
+        })
+    }
+
+    func loadMore() {
+        guard !isLoadingMore, hasMore else { return }
+        Task(operation: {
+            isLoadingMore = true
+            defer { isLoadingMore = false }
+            do {
+                let result = try await diaryStore.fetchEntries(limit: pageSize, after: lastCursor)
+                entries.append(contentsOf: result.entries)
+                lastCursor = result.cursor
+                hasMore = result.cursor != nil
             } catch {
                 self.error = error
             }
@@ -62,6 +89,7 @@ final class DiaryListViewModel: ObservableObject, ErrorDisplayable, AlertDisplay
             do {
                 try await diaryStore.deleteEntry(id: entry.id)
                 entries.removeAll { $0.id == entry.id }
+                NotificationCenter.default.post(name: .diaryEntryUpdated, object: nil)
             } catch {
                 self.error = error
             }

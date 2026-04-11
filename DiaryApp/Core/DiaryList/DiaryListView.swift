@@ -75,20 +75,13 @@ struct DiaryListView: View {
                     }
 
                     // Entries
-                    if viewModel.isLoading {
-                        ForEach(0..<3, id: \.self) { _ in
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(Color.diaryCard)
-                                .frame(height: 120)
-                                .padding(.horizontal, 20)
-                                .padding(.bottom, 12)
-                                .redacted(reason: .placeholder)
-                        }
-                    } else if viewModel.entries.isEmpty {
+                    if viewModel.entries.isEmpty && !viewModel.isLoading {
                         emptyState
                     } else {
-                        ForEach(viewModel.groupedEntries, id: \.key) { group in
-                            if group.key != viewModel.groupedEntries.first?.key {
+                        let allGroups = viewModel.groupedEntries
+                        let lastEntry = allGroups.last?.entries.last
+                        ForEach(allGroups, id: \.key) { group in
+                            if group.key != allGroups.first?.key {
                                 Text(group.key)
                                     .font(.system(size: 13))
                                     .foregroundStyle(Color.diarySecondary)
@@ -110,12 +103,38 @@ struct DiaryListView: View {
                                     insertion: .move(edge: .bottom).combined(with: .opacity),
                                     removal: .opacity.combined(with: .scale(scale: 0.95))
                                 ))
+                                .onAppear {
+                                    if entry.id == lastEntry?.id {
+                                        viewModel.loadMore()
+                                    }
+                                }
                             }
+                        }
+
+                        if viewModel.isLoadingMore {
+                            ProgressView()
+                                .tint(theme.accent)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
                         }
                     }
 
                     Spacer().frame(height: 90)
                 }
+            }
+
+            // Full-screen loading overlay
+            if viewModel.isLoading {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.8)
+                        .tint(theme.accent)
+                    Text(lang.l("Loading...", "Завантаження..."))
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color.diarySecondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.diaryBackground.ignoresSafeArea())
             }
         }
         .showError(viewModel: viewModel)
@@ -183,18 +202,32 @@ struct DiaryListView: View {
 struct StreakBadge: View {
     let streak: Int
 
+    @EnvironmentObject private var lang: LanguageManager
+
+    private var flameColor: Color {
+        switch streak {
+        case 1...2:   return Color(hex: "#FFD166")
+        case 3...6:   return Color(hex: "#FF8C42")
+        case 7...13:  return Color(hex: "#FF6B35")
+        case 14...29: return Color(hex: "#FF4B4B")
+        default:      return Color(hex: "#C44DFF")
+        }
+    }
+
     var body: some View {
-        HStack(spacing: 4) {
-            Text("🔥")
+        HStack(spacing: 6) {
+            Image(systemName: "flame.fill")
+                .font(.system(size: 17))
+                .foregroundStyle(flameColor)
             Text("\(streak) \(dayLabel(streak))")
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color.diaryPrimaryText)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
         .background(
             LinearGradient(
-                colors: [Color(hex: "#FF6B35").opacity(0.18), Color.diaryCard],
+                colors: [flameColor.opacity(0.18), Color.diaryCard],
                 startPoint: .leading,
                 endPoint: .trailing
             )
@@ -203,8 +236,8 @@ struct StreakBadge: View {
     }
 
     private func dayLabel(_ count: Int) -> String {
-        LanguageManager.shared.l(count == 1 ? "day" : "days",
-                                  count == 1 ? "день" : "днів")
+        lang.l(count == 1 ? "day" : "days",
+               count == 1 ? "день" : "днів")
     }
 }
 

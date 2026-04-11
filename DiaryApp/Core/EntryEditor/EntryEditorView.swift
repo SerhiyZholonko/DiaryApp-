@@ -369,6 +369,7 @@ struct EntryEditorView: View {
             MediaThumbnailStrip(
                 entryId: viewModel.entryId,
                 attachments: viewModel.attachments,
+                isEditMode: !showPreview,
                 onRemove: { viewModel.removeAttachment($0) },
                 onTap: { fullscreenIndex = $0 }
             )

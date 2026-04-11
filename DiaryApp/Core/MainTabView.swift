@@ -61,27 +61,27 @@ struct MainTabView: View {
         }
     }
 
-    @ViewBuilder
     private var currentScreen: some View {
-        switch selectedTab {
-        case .diary:
+        ZStack {
             DiaryListView(
                 onNewEntry: { openEditor(entry: nil) },
                 onEdit: { openEditor(entry: $0) },
                 namespace: editorNS
             )
-        case .stats:
+            .opacity(selectedTab == .diary || selectedTab == .newEntry ? 1 : 0)
+            .allowsHitTesting(selectedTab == .diary || selectedTab == .newEntry)
+
             StatsView(onEdit: { openEditor(entry: $0) })
-        case .newEntry:
-            DiaryListView(
-                onNewEntry: { openEditor(entry: nil) },
-                onEdit: { openEditor(entry: $0) },
-                namespace: editorNS
-            )
-        case .search:
+                .opacity(selectedTab == .stats ? 1 : 0)
+                .allowsHitTesting(selectedTab == .stats)
+
             SearchView(onEdit: { openEditor(entry: $0) })
-        case .profile:
+                .opacity(selectedTab == .search ? 1 : 0)
+                .allowsHitTesting(selectedTab == .search)
+
             SettingsView(onSignOut: onSignOut)
+                .opacity(selectedTab == .profile ? 1 : 0)
+                .allowsHitTesting(selectedTab == .profile)
         }
     }
 }
@@ -129,15 +129,8 @@ struct CustomTabBar: View {
         .padding(.horizontal, 8)
         .padding(.bottom, 8)
         .background(
-            LinearGradient(
-                stops: [
-                    .init(color: Color.diaryCard.opacity(0), location: 0),
-                    .init(color: Color.diaryCard, location: 0.32)
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea(edges: .bottom)
+            Color.diaryCard
+                .ignoresSafeArea(edges: .bottom)
         )
         .overlay(alignment: .top) {
             GeometryReader { proxy in
@@ -177,6 +170,7 @@ struct TabBarItem: View {
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
+                .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

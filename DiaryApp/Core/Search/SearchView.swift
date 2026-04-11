@@ -8,15 +8,17 @@ struct SearchView: View {
     @EnvironmentObject private var theme: AppTheme
     @EnvironmentObject private var lang: LanguageManager
     @StateObject private var viewModel = SearchViewModel()
+    @FocusState private var searchFocused: Bool
 
     private let filters: [SearchFilter] = [
         .all, .today, .thisWeek,
-        .mood(.excellent), .mood(.good), .mood(.neutral)
+        .mood(.excellent), .mood(.good), .mood(.neutral), .mood(.bad), .mood(.awful)
     ]
 
     var body: some View {
         ZStack {
             Color.diaryBackground.ignoresSafeArea()
+                .onTapGesture { searchFocused = false }
 
             VStack(spacing: 0) {
                 // Title
@@ -43,18 +45,34 @@ struct SearchView: View {
                 .padding(.bottom, 12)
 
                 // Search bar
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(Color.diarySecondary)
-                    TextField(lang.l("Search entries...", "Пошук записів..."), text: $viewModel.query)
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color.diaryPrimaryText)
-                        .tint(theme.accent)
+                HStack(spacing: 8) {
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .foregroundStyle(Color.diarySecondary)
+                        TextField(lang.l("Search entries...", "Пошук записів..."), text: $viewModel.query)
+                            .font(.system(size: 16))
+                            .foregroundStyle(Color.diaryPrimaryText)
+                            .tint(theme.accent)
+                            .focused($searchFocused)
+                            .submitLabel(.search)
+                            .onSubmit { searchFocused = false }
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(Color.diaryCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+
+                    if searchFocused {
+                        Button(lang.l("Cancel", "Скасувати")) {
+                            searchFocused = false
+                            viewModel.query = ""
+                        }
+                        .font(.system(size: 15))
+                        .foregroundStyle(theme.accent)
+                        .transition(.move(edge: .trailing).combined(with: .opacity))
+                    }
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .background(Color.diaryCard)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .animation(.spring(response: 0.3, dampingFraction: 0.8), value: searchFocused)
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 12)
@@ -62,7 +80,7 @@ struct SearchView: View {
                 // Filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(filters, id: \.label) { filter in
+                        ForEach(filters, id: \.stableId) { filter in
                             FilterChip(
                                 label: filter.label,
                                 isSelected: viewModel.selectedFilter == filter,
@@ -147,6 +165,7 @@ struct SearchView: View {
                         Spacer().frame(height: 90)
                     }
                 }
+                .scrollDismissesKeyboard(.immediately)
             }
         }
     }
