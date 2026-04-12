@@ -23,9 +23,9 @@ struct StatsView: View {
         ZStack {
             Color.diaryBackground.ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: isRegular ? 28 : 20) {
-                    // Title
+            VStack(spacing: 0) {
+                // Sticky header
+                VStack(alignment: .leading, spacing: isRegular ? 16 : 12) {
                     HStack(spacing: 10) {
                         ZStack {
                             RoundedRectangle(cornerRadius: isRegular ? 14 : 10)
@@ -46,9 +46,16 @@ struct StatsView: View {
                     }
                     .padding(.top, 16)
 
-                    // Month selector
                     monthSelector
+                }
+                .padding(.horizontal, isRegular ? 40 : 20)
+                .padding(.bottom, 12)
+                .background(Color.diaryBackground)
+                .frame(maxWidth: contentMaxWidth)
+                .frame(maxWidth: .infinity)
 
+            ScrollView {
+                VStack(alignment: .leading, spacing: isRegular ? 28 : 20) {
                     // Summary cards
                     HStack(spacing: 12) {
                         StatCard(title: lang.l("Entries", "Записів"),  value: "\(viewModel.totalEntries)", icon: "doc.text.fill")
@@ -71,6 +78,7 @@ struct StatsView: View {
                 .frame(maxWidth: contentMaxWidth)
                 .frame(maxWidth: .infinity)
             }
+            } // end outer VStack
         }
         .onAppear { viewModel.load() }
         .onChange(of: viewModel.selectedMonth) { _ in viewModel.computeStats() }
@@ -274,6 +282,8 @@ struct StatsView: View {
                                 }
                                 .frame(height: isRegular ? 8 : 6)
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }

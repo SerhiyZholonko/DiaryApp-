@@ -17,6 +17,14 @@ final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayabl
     private var allEntries: [DiaryEntry] = []
 
     init() {
+        NotificationCenter.default.addObserver(
+            forName: .diaryEntryUpdated,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in self?.load() }
+        }
+
         $query
             .combineLatest($selectedFilter)
             .debounce(for: .milliseconds(300), scheduler: RunLoop.main)

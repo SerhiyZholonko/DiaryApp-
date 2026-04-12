@@ -13,28 +13,33 @@ struct SettingsView: View {
         ZStack {
             Color.diaryBackground.ignoresSafeArea()
 
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Title
-                    HStack(spacing: 10) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(LinearGradient(
-                                    colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ))
-                                .frame(width: 36, height: 36)
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 16))
-                                .foregroundStyle(theme.accent)
-                        }
-                        Text(lang.l("Settings", "Налаштування"))
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundStyle(Color.diaryPrimaryText)
-                        Spacer()
+            VStack(spacing: 0) {
+                // Sticky header
+                HStack(spacing: 10) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(LinearGradient(
+                                colors: [theme.accent.opacity(0.35), theme.accent.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                            .frame(width: 36, height: 36)
+                        Image(systemName: "gearshape.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(theme.accent)
                     }
+                    Text(lang.l("Settings", "Налаштування"))
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(Color.diaryPrimaryText)
+                    Spacer()
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 12)
+                .background(Color.diaryBackground)
 
+                ScrollView {
+                VStack(spacing: 20) {
                     profileCard
 
                     // Security section
@@ -270,8 +275,9 @@ struct SettingsView: View {
                     Spacer().frame(height: 90)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 8)
             }
+            } // end outer VStack
         }
         .showError(viewModel: viewModel)
         .onAppear { viewModel.syncReminderFromCloud() }

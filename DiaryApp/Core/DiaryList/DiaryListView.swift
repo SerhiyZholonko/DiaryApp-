@@ -17,14 +17,16 @@ struct DiaryListView: View {
         ZStack {
             Color.diaryBackground.ignoresSafeArea()
 
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: []) {
-                    // Header
-                    headerView
-                        .padding(.horizontal, 20)
-                        .padding(.top, 16)
-                        .padding(.bottom, 8)
+            VStack(spacing: 0) {
+                // Sticky header
+                headerView
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
+                    .background(Color.diaryBackground)
 
+                ScrollView {
+                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: []) {
                     // Month label
                     if let firstGroup = viewModel.groupedEntries.first {
                         Text(firstGroup.key)
@@ -122,6 +124,7 @@ struct DiaryListView: View {
                     Spacer().frame(height: 90)
                 }
             }
+            } // end outer VStack
 
             // Full-screen loading overlay
             if viewModel.isLoading {
