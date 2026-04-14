@@ -209,11 +209,11 @@ struct StreakBadge: View {
 
     private var flameColor: Color {
         switch streak {
-        case 1...2:   return Color(hex: "#FFD166")
-        case 3...6:   return Color(hex: "#FF8C42")
-        case 7...13:  return Color(hex: "#FF6B35")
-        case 14...29: return Color(hex: "#FF4B4B")
-        default:      return Color(hex: "#C44DFF")
+        case 1...2:   return .moodNeutral
+        case 3...6:   return .moodBad
+        case 7...13:  return .streakFlameHigh
+        case 14...29: return .moodAwful
+        default:      return .streakFlameExtreme
         }
     }
 

@@ -301,21 +301,21 @@ struct StatsView: View {
 
     private func streakFlameColor(_ days: Int) -> Color {
         switch days {
-        case 1...2:   return Color(hex: "#FFD166")
-        case 3...6:   return Color(hex: "#FF8C42")
-        case 7...13:  return Color(hex: "#FF6B35")
-        case 14...29: return Color(hex: "#FF4B4B")
-        default:      return Color(hex: "#C44DFF")
+        case 1...2:   return .moodNeutral
+        case 3...6:   return .moodBad
+        case 7...13:  return .streakFlameHigh
+        case 14...29: return .moodAwful
+        default:      return .streakFlameExtreme
         }
     }
 
     private func moodColor(for value: Double) -> Color {
         switch value {
-        case ..<1.5: return Color(hex: "#FF4B4B")
-        case ..<2.5: return Color(hex: "#FF8C42")
-        case ..<3.5: return Color(hex: "#FFD166")
-        case ..<4.5: return Color(hex: "#06D6A0")
-        default:     return Color(hex: "#4ECDC4")
+        case ..<1.5: return .moodAwful
+        case ..<2.5: return .moodBad
+        case ..<3.5: return .moodNeutral
+        case ..<4.5: return .moodGood
+        default:     return .moodExcellent
         }
     }
 

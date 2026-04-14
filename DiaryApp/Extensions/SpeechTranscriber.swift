@@ -1,6 +1,6 @@
 // MARK: - Speech Transcriber
 // Транскрибує аудіофайл у текст через Apple Speech framework.
-// Основна мова — uk-UA; fallback на поточний locale пристрою.
+// Locale береться з мови застосунку; fallback на Locale.current, потім на системний розпізнавач.
 import Speech
 import Foundation
 
@@ -8,15 +8,15 @@ final class SpeechTranscriber {
     static let shared = SpeechTranscriber()
     private init() {}
 
-    /// Транскрибує аудіофайл за URL. Кидає `TranscriptionError` або системну помилку.
-    func transcribe(url: URL) async throws -> String {
+    /// Транскрибує аудіофайл за URL. `locale` — мова розпізнавання (за замовчуванням — поточний locale пристрою).
+    func transcribe(url: URL, locale: Locale = .current) async throws -> String {
         try await requestAuthorization()
 
-        let preferredLocale = Locale.current
-        let recognizer: SFSpeechRecognizer? =
-            SFSpeechRecognizer(locale: preferredLocale)?.isAvailable == true
-                ? SFSpeechRecognizer(locale: preferredLocale)
-                : SFSpeechRecognizer()
+        let recognizer: SFSpeechRecognizer? = {
+            if let r = SFSpeechRecognizer(locale: locale), r.isAvailable { return r }
+            if let r = SFSpeechRecognizer(locale: .current), r.isAvailable { return r }
+            return SFSpeechRecognizer()
+        }()
 
         guard let recognizer, recognizer.isAvailable else {
             throw TranscriptionError.unavailable

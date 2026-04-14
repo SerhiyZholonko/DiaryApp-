@@ -182,7 +182,7 @@ struct AIInsightsCard: View {
         HStack(alignment: .top, spacing: 8) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 12))
-                .foregroundStyle(Color(hex: "#FF4B4B"))
+                .foregroundStyle(Color.moodAwful)
                 .padding(.top, 1)
             VStack(alignment: .leading, spacing: 4) {
                 Text(message)
@@ -205,6 +205,6 @@ struct AIInsightsCard: View {
     AIInsightsCard()
         .environmentObject(AppTheme())
         .padding()
-        .background(Color(hex: "#0D0D1A"))
+        .background(Color.diaryBackground)
         .preferredColorScheme(.dark)
 }

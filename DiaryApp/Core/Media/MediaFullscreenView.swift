@@ -112,11 +112,11 @@ struct MediaFullscreenView: View {
         VStack(spacing: 32) {
             ZStack {
                 Circle()
-                    .fill(Color(hex: "#9B85FF").opacity(0.15))
+                    .fill(Color.diaryPurple.opacity(0.15))
                     .frame(width: 120, height: 120)
                 Image(systemName: "waveform")
                     .font(.system(size: 48))
-                    .foregroundStyle(Color(hex: "#9B85FF"))
+                    .foregroundStyle(Color.diaryPurple)
             }
 
             // Progress bar
@@ -127,7 +127,7 @@ struct MediaFullscreenView: View {
                             .fill(.white.opacity(0.2))
                             .frame(height: 4)
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color(hex: "#9B85FF"))
+                            .fill(Color.diaryPurple)
                             .frame(width: geo.size.width * audioProgress, height: 4)
                     }
                 }
@@ -150,7 +150,7 @@ struct MediaFullscreenView: View {
             Button(action: toggleAudio) {
                 ZStack {
                     Circle()
-                        .fill(Color(hex: "#9B85FF"))
+                        .fill(Color.diaryPurple)
                         .frame(width: 64, height: 64)
                     Image(systemName: isAudioPlaying ? "pause.fill" : "play.fill")
                         .font(.system(size: 24))

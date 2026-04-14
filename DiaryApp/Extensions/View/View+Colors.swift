@@ -4,7 +4,9 @@
 // генеруються автоматично з Assets.xcassets (GeneratedAssetSymbols.swift)
 import SwiftUI
 
-// diaryPurple та diaryPurpleLight — через AppTheme.accent / AppTheme.accentLight
+// Всі кольори з Assets.xcassets (MoodAwful, MoodBad, MoodNeutral, MoodGood, MoodExcellent,
+// StreakFlameHigh, StreakFlameExtreme, DiaryPurple, DiaryBlue, DiaryVideoGreen, GoogleBlue
+// та інші) генеруються автоматично в GeneratedAssetSymbols.swift як Color.moodAwful і т.д.
 
 // MARK: - Hex Color Init
 extension Color {

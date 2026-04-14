@@ -7,6 +7,7 @@ import Combine
 final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayable {
     @Published var query = ""
     @Published var results: [DiaryEntry] = []
+    @Published var allTags: [String] = []
     @Published var isSearching = false
     @Published var selectedFilter: SearchFilter = .all
     @Published var error: Error?
@@ -38,6 +39,7 @@ final class SearchViewModel: ObservableObject, ErrorDisplayable, AlertDisplayabl
         Task(operation: {
             do {
                 allEntries = try await diaryStore.fetchEntries()
+                allTags = Array(Set(allEntries.flatMap { $0.tags })).sorted()
                 applyFilter(query: query, filter: selectedFilter)
             } catch {
                 self.error = error

@@ -67,11 +67,11 @@ struct VoiceRecorderSheet: View {
                 ZStack {
                     Circle()
                         .fill(recorder.isRecording
-                              ? Color(hex: "#FF4B4B").opacity(0.15)
+                              ? Color.moodAwful.opacity(0.15)
                               : theme.accent.opacity(0.15))
                         .frame(width: 88, height: 88)
                     Circle()
-                        .fill(recorder.isRecording ? Color(hex: "#FF4B4B") : theme.accent)
+                        .fill(recorder.isRecording ? Color.moodAwful : theme.accent)
                         .frame(width: 68, height: 68)
                     Image(systemName: recorder.isRecording ? "stop.fill" : "mic.fill")
                         .font(.system(size: 26))
@@ -96,7 +96,7 @@ struct VoiceRecorderSheet: View {
             // Duration badge
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(Color(hex: "#4CAF50"))
+                    .foregroundStyle(Color.diaryVideoGreen)
                 Text("\(lang.l("Recording done", "Запис завершено")) · \(recorder.timeString)")
                     .font(.system(size: 15))
                     .foregroundStyle(Color.diaryPrimaryText)
@@ -109,7 +109,7 @@ struct VoiceRecorderSheet: View {
             if let err = transcriptionError {
                 Text(err)
                     .font(.system(size: 13))
-                    .foregroundStyle(Color(hex: "#FF4B4B"))
+                    .foregroundStyle(Color.moodAwful)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 24)
                     .padding(.top, 12)
@@ -200,7 +200,10 @@ struct VoiceRecorderSheet: View {
         state = .transcribing
         Task {
             do {
-                let text = try await SpeechTranscriber.shared.transcribe(url: url)
+                let text = try await SpeechTranscriber.shared.transcribe(
+                    url: url,
+                    locale: Locale(identifier: lang.language.localeIdentifier)
+                )
                 if text.isEmpty {
                     throw SpeechTranscriber.TranscriptionError.emptyResult
                 }
@@ -311,7 +314,7 @@ private struct WaveBar: View {
 
     var body: some View {
         RoundedRectangle(cornerRadius: 1.5)
-            .fill(isActive ? Color(hex: "#9B85FF") : Color.diaryDivider)
+            .fill(isActive ? Color.diaryPurple : Color.diaryDivider)
             .frame(width: 3, height: max(4, h))
             .onChange(of: isActive) { _, active in
                 if active { animate() } else {

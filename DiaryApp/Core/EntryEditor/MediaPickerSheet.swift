@@ -37,19 +37,19 @@ struct MediaPickerSheet: View {
                 spacing: 16
             ) {
                 // Камера: відкриваємо поверх sheet (без попереднього dismiss)
-                mediaOption(title: lang.l("Camera", "Камера"), icon: "camera.fill", color: Color(hex: "#FF8C42")) {
+                mediaOption(title: lang.l("Camera", "Камера"), icon: "camera.fill", color: .moodBad) {
                     showCamera = true
                 }
-                mediaOption(title: lang.l("Gallery", "Галерея"), icon: "photo.fill", color: Color(hex: "#4A90D9")) {
+                mediaOption(title: lang.l("Gallery", "Галерея"), icon: "photo.fill", color: .diaryBlue) {
                     showPhotoPicker = true
                 }
-                mediaOption(title: lang.l("Video", "Відео"), icon: "video.fill", color: Color(hex: "#4CAF50")) {
+                mediaOption(title: lang.l("Video", "Відео"), icon: "video.fill", color: .diaryVideoGreen) {
                     showVideoPicker = true
                 }
                 mediaOption(
                     title: lang.l("Voice\nNotes", "Голосові\nнотатки"),
                     icon: "mic.fill",
-                    color: Color(hex: "#9B85FF")
+                    color: .diaryPurple
                 ) {
                     showVoiceRecorder = true
                 }

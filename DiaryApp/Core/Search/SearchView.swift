@@ -91,23 +91,32 @@ struct SearchView: View {
                     .padding(.horizontal, 20)
                 }
 
-                // Tag filters from entries
-                if !viewModel.results.isEmpty {
-                    let allTags = Array(Set(viewModel.results.flatMap { $0.tags })).sorted().prefix(6)
-                    if !allTags.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                Text(lang.l("Tags:", "Теги:"))
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(Color.diarySecondary)
-                                ForEach(allTags, id: \.self) { tag in
-                                    TagChip(text: "#\(tag)")
+                // Tag filters
+                if !viewModel.allTags.isEmpty {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            Text(lang.l("Tags:", "Теги:"))
+                                .font(.system(size: 13))
+                                .foregroundStyle(Color.diarySecondary)
+                            ForEach(viewModel.allTags, id: \.self) { tag in
+                                let isSelected = viewModel.selectedFilter == .tag(tag)
+                                Button {
+                                    viewModel.selectedFilter = isSelected ? .all : .tag(tag)
+                                } label: {
+                                    Text("#\(tag)")
+                                        .font(.system(size: 13, weight: isSelected ? .semibold : .medium))
+                                        .foregroundStyle(isSelected ? .white : theme.accentLight)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 5)
+                                        .background(isSelected ? theme.accent : theme.accent.opacity(0.18))
+                                        .clipShape(Capsule())
+                                        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isSelected)
                                 }
                             }
-                            .padding(.horizontal, 20)
                         }
-                        .padding(.top, 8)
+                        .padding(.horizontal, 20)
                     }
+                    .padding(.top, 8)
                 }
 
                 if viewModel.query.isEmpty && viewModel.selectedFilter == .all {

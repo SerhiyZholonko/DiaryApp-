@@ -78,7 +78,7 @@ struct AuthView: View {
                         HStack(spacing: 12) {
                             Text("G")
                                 .font(.system(size: 20, weight: .bold))
-                                .foregroundStyle(Color(hex: "#4285F4"))
+                                .foregroundStyle(Color.googleBlue)
                                 .frame(width: 24)
                             Text(lang.l("Continue with Google", "Продовжити з Google"))
                                 .font(.system(size: 16, weight: .medium))

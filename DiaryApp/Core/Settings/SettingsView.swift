@@ -133,7 +133,7 @@ struct SettingsView: View {
 
                         Divider().background(Color.diaryDivider).padding(.leading, 52)
 
-                        settingsRow(icon: "flame.fill", iconColor: Color(hex: "#FF6B35")) {
+                        settingsRow(icon: "flame.fill", iconColor: .streakFlameHigh) {
                             HStack {
                                 Text(lang.l("Streak Goal", "Ціль серії"))
                                     .font(.system(size: 16))
@@ -159,7 +159,7 @@ struct SettingsView: View {
 
                     // Appearance section
                     section(title: lang.l("APPEARANCE", "ВИГЛЯД")) {
-                        settingsRow(icon: "moon.fill", iconColor: Color(hex: "#9B85FF")) {
+                        settingsRow(icon: "moon.fill", iconColor: .diaryPurple) {
                             HStack {
                                 Text(lang.l("Dark Theme", "Темна тема"))
                                     .font(.system(size: 16))
@@ -184,7 +184,7 @@ struct SettingsView: View {
 
                         Divider().background(Color.diaryDivider).padding(.leading, 52)
 
-                        settingsRow(icon: "paintpalette.fill", iconColor: Color(hex: "#FF8C42")) {
+                        settingsRow(icon: "paintpalette.fill", iconColor: .moodBad) {
                             HStack {
                                 Text(lang.l("Accent Color", "Акцентний колір"))
                                     .font(.system(size: 16))
@@ -220,7 +220,7 @@ struct SettingsView: View {
 
                     // Language section
                     section(title: lang.l("LANGUAGE", "МОВА")) {
-                        settingsRow(icon: "globe", iconColor: Color(hex: "#4A90D9")) {
+                        settingsRow(icon: "globe", iconColor: .diaryBlue) {
                             HStack {
                                 Text(lang.l("Language", "Мова"))
                                     .font(.system(size: 16))
@@ -265,7 +265,7 @@ struct SettingsView: View {
                     Button(action: { viewModel.signOut(completion: onSignOut) }) {
                         Text(lang.l("Sign Out", "Вийти"))
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundStyle(Color(hex: "#FF4B4B"))
+                            .foregroundStyle(Color.moodAwful)
                             .frame(maxWidth: .infinity)
                             .frame(height: 52)
                             .background(Color.diaryCard)
